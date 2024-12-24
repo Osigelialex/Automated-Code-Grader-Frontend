@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Stylish } from "next/font/google";
 import "./globals.css";
 
-export const stylish = Stylish({ subsets: ['latin'], weight: "400"})
+const stylish = Stylish({ subsets: ['latin'], weight: "400"})
 
 export const metadata: Metadata = {
   title: "CheckMate",
