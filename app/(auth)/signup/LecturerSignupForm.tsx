@@ -26,23 +26,23 @@ export default function LecturerSignupForm() {
       <div className='grid lg:grid-cols-2 gap-4'>
         <div>
           <label htmlFor="firstName" className='block text-sm'>FirstName</label>
-          <input {...register('firstName')} type="text" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+          <input {...register('firstName')} type="text" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
           <p className='text-sm text-red-400'>{errors.firstName?.message}</p>
         </div>
         <div>
           <label htmlFor="lastName" className='block text-sm'>LastName</label>
-          <input {...register('lastName')} type="text" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+          <input {...register('lastName')} type="text" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
           <p className='text-sm text-red-400'>{errors.lastName?.message}</p>
         </div>
       </div>
       <div>
         <label htmlFor="email" className='block text-sm'>Email</label>
-        <input {...register('email')} type="email" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+        <input {...register('email')} type="email" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
         <p className='text-sm text-red-400'>{errors.email?.message}</p>
       </div>
       <div>
         <label htmlFor="department" className='block text-sm'>Department</label>
-        <select {...register('department')} className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent">
+        <select {...register('department')} className="input input-bordered bg-base-100 w-full p-2 rounded-md outline-none border bg-transparent">
           <option value="" disabled>Department</option>
           <option value={"Computer Science"}>Computer Science</option>
           <option value={"Software Engineering"}>Software Engineering</option>
@@ -55,17 +55,17 @@ export default function LecturerSignupForm() {
       </div>
       <div>
         <label htmlFor="staffid" className='block text-sm'>Staff id</label>
-        <input {...register('staffid')} type="text" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+        <input {...register('staffid')} type="text" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
         <p className='text-sm text-red-400'>{errors.password?.message}</p>
       </div>
       <div>
         <label htmlFor="password" className='block text-sm'>Password</label>
-        <input {...register('password')} type="password" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+        <input {...register('password')} type="password" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
         <p className='text-sm text-red-400'>{errors.password?.message}</p>
       </div>
       <div>
         <label htmlFor="confirm" className='block text-sm'>Confirm password</label>
-        <input {...register('confirmPassword')} type="password" className="input w-full p-2 rounded-md focus:ring ring-primary outline-none border border-gray-300 bg-transparent" />
+        <input {...register('confirmPassword')} type="password" className="input input-bordered w-full p-2 rounded-md focus:ring ring-primary outline-none border bg-transparent" />
         <p className='text-sm text-red-400'>{errors.confirmPassword?.message}</p>
       </div>
       <Button value='Create Account' type='submit' onClick={() => {}} />

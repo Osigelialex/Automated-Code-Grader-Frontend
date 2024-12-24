@@ -9,7 +9,7 @@ export const StudentSingupFormSchema = z.object({
   confirmPassword: z.string(),
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
   lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
-  matric: z.string().regex(/"^\d{2}\/\d{4}$"/, { message: 'Please enter a valid matric number' }),
+  matric: z.string().regex(/^\d{2}\/\d{4}$/, { message: 'Please enter a valid matric number' }),
   department: z.string().min(2),
   level: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
