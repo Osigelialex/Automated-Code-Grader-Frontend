@@ -54,7 +54,7 @@ export default function AccountVerification() {
       </p>
 
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">Haven't received the verification email?</p>
+        <p className="text-sm text-muted-foreground">Haven&apos;t received the verification email?</p>
         <Button 
           onClick={handleResendEmail} 
           disabled={isResending}
