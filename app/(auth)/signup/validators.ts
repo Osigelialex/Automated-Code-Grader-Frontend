@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const StudentSingupFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string()
-    .regex(/"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\d!@#$%^&*(),.?\":{}|<>]{8,}$"/, {
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\d!@#$%^&*(),.?\":{}|<>]{8,}$/, {
     message: 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character'
   }),
   confirmPassword: z.string(),
@@ -20,8 +20,8 @@ export const StudentSingupFormSchema = z.object({
 export const LecturerSingupFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string()
-    .regex(/"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\d!@#$%^&*(),.?\":{}|<>]{8,}$"/, {
-    message: 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character'
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\d!@#$%^&*(),.?\":{}|<>]{8,}$/, {
+    message: 'Password does not meet the requirements'
   }),
   confirmPassword: z.string(),
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
