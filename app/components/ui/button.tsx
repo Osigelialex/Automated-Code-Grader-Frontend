@@ -6,7 +6,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   width?: string;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function Button(props: ButtonProps) {
@@ -15,7 +15,7 @@ export function Button(props: ButtonProps) {
       disabled={props.disabled}
       type={props.type}
       onClick={props.onClick}
-      className={`bg-primary text-white px-4 py-2 rounded-md w-full my-1 ${props.width}`}>
+      className={`bg-primary text-white px-4 py-2 rounded-md w-full my-1 ${props.width} ${props.disabled && 'opacity-50'}`}>
         {props.loading ? (
           <span className="loading loading-dots loading-xs"></span>
         ) :

@@ -5,13 +5,16 @@ import { LecturerSingupFormSchema } from './validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/app/components/ui/button';
 import { EyeClosed, Eye } from 'lucide-react';
+import { api } from '@/lib/axiosConfig';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface LecturerSignupFormProps {
   email: string;
   password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
+  confirmPassword?: string;
+  first_name: string;
+  last_name: string;
   department: string;
   staffid: string;
 }
@@ -19,23 +22,48 @@ interface LecturerSignupFormProps {
 export default function LecturerSignupForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LecturerSignupFormProps>({
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting }
+  } = useForm<LecturerSignupFormProps>({
     resolver: zodResolver(LecturerSingupFormSchema),
   });
 
-  const onSubmit = (data: LecturerSignupFormProps) => console.log(data);
+  const onSubmit = async (data: LecturerSignupFormProps) => {
+    delete data.confirmPassword;
+
+    try {
+      await api.post('/auth/register-lecturer', data);
+      router.push('/verification');
+    } catch (e: any) {
+      if (e.response.data.message) {
+        toast.error(e.response.data.message, { duration: 5000 });
+        return;
+      }
+
+      Object.entries(e.response.data).forEach(([field, messages]) => {
+        setError(field as keyof LecturerSignupFormProps, {
+          type: 'server',
+          message: Array.isArray(messages) ? messages[0] : messages
+        });
+      });
+    }
+  };
 
   const handleStaffIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-    
+
     // Remove any non-digit characters
     value = value.replace(/\D/g, '');
-    
+
     if (value.length >= 2) {
       value = value.slice(0, 2) + '/' + value.slice(2);
     }
-    
+
     e.target.value = value;
   };
 
@@ -44,13 +72,13 @@ export default function LecturerSignupForm() {
       <div className='grid lg:grid-cols-2 gap-4'>
         <div>
           <label htmlFor="firstName" className='block text-sm'>FirstName</label>
-          <input {...register('firstName')} id='firstName' type="text" className="input input-bordered w-full" />
-          <p className='text-sm text-red-400'>{errors.firstName?.message}</p>
+          <input {...register('first_name')} id='firstName' type="text" className="input input-bordered w-full" />
+          <p className='text-sm text-red-400'>{errors.first_name?.message}</p>
         </div>
         <div>
           <label htmlFor="lastName" className='block text-sm'>LastName</label>
-          <input {...register('lastName')} id='lastName' type="text" className="input input-bordered w-full" />
-          <p className='text-sm text-red-400'>{errors.lastName?.message}</p>
+          <input {...register('last_name')} id='lastName' type="text" className="input input-bordered w-full" />
+          <p className='text-sm text-red-400'>{errors.last_name?.message}</p>
         </div>
       </div>
       <div>
@@ -73,7 +101,7 @@ export default function LecturerSignupForm() {
       </div>
       <div>
         <label htmlFor="staffid" className='block text-sm'>Staff id</label>
-        <input 
+        <input
           {...register('staffid')}
           id='staffid'
           type="text"
@@ -112,7 +140,12 @@ export default function LecturerSignupForm() {
         </div>
         <p className='text-sm text-red-400'>{errors.confirmPassword?.message}</p>
       </div>
-      <Button value='Create Account' type='submit' onClick={() => {}} />
+      <Button
+        value='Create Account'
+        type='submit'
+        loading={isSubmitting}
+        disabled={isSubmitting}
+      />
     </form>
   )
 }

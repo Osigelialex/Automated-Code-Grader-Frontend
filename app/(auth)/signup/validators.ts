@@ -7,8 +7,8 @@ export const StudentSingupFormSchema = z.object({
     message: 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character'
   }),
   confirmPassword: z.string(),
-  firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
-  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
+  first_name: z.string().min(2, { message: 'First name must be at least 2 characters' }),
+  last_name: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   matric: z.string().regex(/^\d{2}\/\d{4}$/, { message: 'Please enter a valid matric number' }),
   department: z.string().min(2),
   level: z.string()
@@ -24,8 +24,8 @@ export const LecturerSingupFormSchema = z.object({
     message: 'Password does not meet the requirements'
   }),
   confirmPassword: z.string(),
-  firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
-  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
+  first_name: z.string().min(2, { message: 'First name must be at least 2 characters' }),
+  last_name: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   department: z.string().min(2),
   staffid: z.string().regex(/^\d{2}\/\d{4}$/, { message: 'Please enter a valid staff id' }),
 }).refine((data) => data.password === data.confirmPassword, {

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
+import { Toaster } from 'sonner';
+
 const roboto = Roboto({ subsets: ['latin'], weight: "400"})
 
 export const metadata: Metadata = {
@@ -16,9 +18,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${roboto.className}`}
-      >
+      <body className={`${roboto.className}`}>
+        <Toaster position="top-center" />
         {children}
       </body>
     </html>
