@@ -17,13 +17,13 @@ export default function SignupPage() {
       {/* Toggle between student and teacher signup  */}
       <div className='flex space-x-10 mt-7'>
         <div
-          className={`cursor-pointer transition-all duration-100 ease-in ${isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
+          className={`text-sm sm:text-md cursor-pointer transition-all duration-100 ease-in ${isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
           onClick={() => setIsStudent(true)}
         >
           Student Signup
         </div>
         <div
-          className={`cursor-pointer transition-all duration-100 ease-in ${!isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
+          className={`text-sm sm:text-md cursor-pointer transition-all duration-100 ease-in ${!isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
           onClick={() => setIsStudent(false)}
         >
           Lecturer Signup

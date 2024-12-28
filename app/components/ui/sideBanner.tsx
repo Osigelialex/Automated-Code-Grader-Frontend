@@ -19,21 +19,21 @@ export function SideBanner() {
           <h2 className="text-3xl font-bold tracking-tight">
             What we offer?
           </h2>
-          <p className="text-white/80 text-lg">
+          <p className="text-white/80 sm:text-lg">
             Experience the future of coding education
           </p>
         </div>
 
-        <ul className="space-y-6 mx-auto lg:w-3/4">
+        <ul className="space-y-6 mx-auto text-left px-3">
           {features.map((feature, index) => (
             <li 
               key={index} 
               className="flex items-center gap-2 p-4 bg-white/10 rounded-lg backdrop-blur-sm transform hover:scale-105 transition-all duration-300"
             >
               <div className="p-2 bg-white/20 rounded-full">
-                <CheckCircle className="w-6 h-6 text-white" />
+                <CheckCircle className="text-white" />
               </div>
-              <span className="text-md font-medium">{feature}</span>
+              <span className="lg:text-lg text-sm font-medium">{feature}</span>
             </li>
           ))}
         </ul>

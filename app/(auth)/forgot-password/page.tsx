@@ -55,9 +55,9 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 sm:w-3/4 mx-auto p-6'>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 sm:w-3/4 mx-auto'>
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Reset your password</h1>
+        <h1 className="sm:text-2xl text-xl font-bold">Reset your password</h1>
         <p className='sm:text-md text-sm'>Enter the email associated with your account to receive a password reset link</p>
       </div>
 
@@ -68,7 +68,7 @@ export default function ForgotPasswordForm() {
       </div>
 
       <Button
-        value={timerActive ? `Resend in ${counterValue}` : 'Send password reset link'}
+        value={timerActive ? `Resend in ${counterValue}` : 'Send reset link'}
         type='submit'
         loading={isSubmitting}
         disabled={isSubmitting || timerActive}
