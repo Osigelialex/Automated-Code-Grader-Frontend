@@ -1,5 +1,6 @@
 import React from 'react'
 import ChangePasswordForm from './ChangePasswordForm'
+import { Suspense } from 'react'
 
 export default function ChangePasswordPage() {
   return (
@@ -9,7 +10,9 @@ export default function ChangePasswordPage() {
         <p className='sm:text-md text-sm'>Enter a new secure password for your account</p>
       </div>
 
-      <ChangePasswordForm />
+      <Suspense fallback={<div className="flex items-center justify-center h-screen"><span className="loading loading-lg"></span></div>}>
+        <ChangePasswordForm />
+      </Suspense>
     </div>
   )
 }
