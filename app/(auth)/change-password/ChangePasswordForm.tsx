@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { ErrorResponse } from '@/app/interfaces/errorInterface';
-import { Suspense } from 'react';
 
 interface ChangePasswordFormProps {
   password: string;
