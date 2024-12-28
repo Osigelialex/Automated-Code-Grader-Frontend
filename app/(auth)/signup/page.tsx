@@ -1,18 +1,37 @@
+'use client'
 import React from 'react'
-import SignupFormContainer from './SignupFormContainer'
-import { SideBanner } from '@/app/components/ui/sideBanner';
-
+import StudentSignupForm from './StudentSignupForm';
+import LecturerSignupForm from './LecturerSignupForm';
+import Link from 'next/link';
 
 export default function SignupPage() {
+  const [isStudent, setIsStudent] = React.useState(true);
+
   return (
-    <main className="min-h-screen">
-      <div className="grid lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7 px-8 py-12 lg:py-20">
-          <SignupFormContainer />
-        </div>
-        
-        <SideBanner />
+    <div className='space-y-8 mx-auto sm:w-3/4'>
+      <div>
+        <h1 className='lg:text-2xl text-xl font-bold mb-2'>Welcome to CheckMate.io</h1>
+        <p className='sm:text-md text-sm'>Create your CheckMate account. Already signed up <Link className='text-primary' href="/login">Login</Link></p>
       </div>
-    </main>
+
+      {/* Toggle between student and teacher signup  */}
+      <div className='flex space-x-10 mt-7'>
+        <div
+          className={`cursor-pointer transition-all duration-100 ease-in ${isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
+          onClick={() => setIsStudent(true)}
+        >
+          Student Signup
+        </div>
+        <div
+          className={`cursor-pointer transition-all duration-100 ease-in ${!isStudent ? 'font-semibold border-b-2 border-primary' : ''}`}
+          onClick={() => setIsStudent(false)}
+        >
+          Lecturer Signup
+        </div>
+      </div>
+
+      {/* Display Form based on the users signup type */}
+      {isStudent ? <StudentSignupForm /> : <LecturerSignupForm />}
+    </div>
   )
 }

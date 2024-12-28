@@ -18,6 +18,7 @@ api.interceptors.response.use(
         await api.post('/auth/refresh');
         return axios(error.config);
       } catch (e: any) {
+        console.log(e);
         return Promise.reject(error);
       }
     }
