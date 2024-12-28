@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { ErrorResponse } from '@/app/interfaces/errorInterface';
+import { Suspense } from 'react';
 
 interface ChangePasswordFormProps {
   password: string;
@@ -53,38 +54,40 @@ export default function ChangePasswordForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-      <div>
-        <label htmlFor='password' className='block text-sm'>Password</label>
-        <div className="input input-bordered flex items-center gap-2">
-          <input {...register('password')} id='password' type={showPassword ? 'text' : 'password'} className="grow" required />
-          {showPassword ? (
-            <Eye size={25} onClick={() => setShowPassword(value => !value)} />
-          ) : (
-            <EyeClosed width={25} onClick={() => setShowPassword(value => !value)} />
-          )}
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><span className="loading loading-lg"></span></div>}>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <div>
+          <label htmlFor='password' className='block text-sm'>Password</label>
+          <div className="input input-bordered flex items-center gap-2">
+            <input {...register('password')} id='password' type={showPassword ? 'text' : 'password'} className="grow" required />
+            {showPassword ? (
+              <Eye size={25} onClick={() => setShowPassword(value => !value)} />
+            ) : (
+              <EyeClosed width={25} onClick={() => setShowPassword(value => !value)} />
+            )}
+          </div>
+          <small>Should contain at least 8 characters, one uppercase, one lowercase and a special character</small>
+          <p className='text-sm text-red-400'>{errors.password?.message}</p>
         </div>
-        <small>Should contain at least 8 characters, one uppercase, one lowercase and a special character</small>
-        <p className='text-sm text-red-400'>{errors.password?.message}</p>
-      </div>
-      <div>
-        <label htmlFor='confirmPassword' className='block text-sm'>Confirm password</label>
-        <div className="input input-bordered flex items-center gap-2">
-          <input {...register('confirmPassword')} id='confirmPassword' type={showConfirmPassword ? 'text' : 'password'} className="grow" />
-          {showConfirmPassword ? (
-            <Eye size={25} onClick={() => setShowConfirmPassword(value => !value)} />
-          ) : (
-            <EyeClosed width={25} onClick={() => setShowConfirmPassword(value => !value)} />
-          )}
+        <div>
+          <label htmlFor='confirmPassword' className='block text-sm'>Confirm password</label>
+          <div className="input input-bordered flex items-center gap-2">
+            <input {...register('confirmPassword')} id='confirmPassword' type={showConfirmPassword ? 'text' : 'password'} className="grow" />
+            {showConfirmPassword ? (
+              <Eye size={25} onClick={() => setShowConfirmPassword(value => !value)} />
+            ) : (
+              <EyeClosed width={25} onClick={() => setShowConfirmPassword(value => !value)} />
+            )}
+          </div>
+          <p className='text-sm text-red-400'>{errors.confirmPassword?.message}</p>
         </div>
-        <p className='text-sm text-red-400'>{errors.confirmPassword?.message}</p>
-      </div>
-      <Button
-        value='Change Password'
-        type='submit'
-        loading={isSubmitting}
-        disabled={isSubmitting}
-      />
-    </form>
+        <Button
+          value='Change Password'
+          type='submit'
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        />
+      </form>
+    </Suspense>
   )
 }
