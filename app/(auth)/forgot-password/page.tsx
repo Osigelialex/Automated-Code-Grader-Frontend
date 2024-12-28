@@ -6,6 +6,8 @@ import { api } from '@/lib/axiosConfig';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ForgotPasswordSchema } from './validators';
+import { AxiosError } from 'axios';
+import { ErrorResponse } from '@/app/interfaces/errorInterface';
 
 interface ForgotPasswordProps {
   email: string;
@@ -43,9 +45,10 @@ export default function ForgotPasswordForm() {
       toast.success(response.data.message, { duration: 5000 });
 
       setTimerActive(true);
-    } catch (e: any) {
-      if (e.response?.data.message) {
-        toast.error(e.response.data.message, { duration: 5000 });
+    } catch (e: unknown) {
+      const error = e as AxiosError<ErrorResponse>
+      if (error.response?.data.message) {
+        toast.error(error.response.data.message, { duration: 5000 });
         return;
       }
     }

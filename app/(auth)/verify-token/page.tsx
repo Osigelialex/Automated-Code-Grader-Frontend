@@ -3,6 +3,8 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/axiosConfig'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from '@/app/interfaces/errorInterface'
 
 export default function VerifyTokenPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -22,7 +24,8 @@ export default function VerifyTokenPage() {
         await api.patch(`/auth/activate?token=${token}`)
         setStatus('success')
         setMessage('Email verified successfully! You can now close this window.')
-      } catch (error: any) {
+      } catch (e: unknown) {
+        const error = e as AxiosError<ErrorResponse>;
         setStatus('error')
         setMessage(error.response?.data?.message || 'Invalid or expired token')
       }

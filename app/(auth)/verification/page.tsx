@@ -4,6 +4,8 @@ import { Button } from '@/app/components/ui/button'
 import Image from 'next/image'
 import { api } from '@/lib/axiosConfig'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
+import { ErrorResponse } from '@/app/interfaces/errorInterface'
 
 export default function AccountVerificationPage() {
   const [isResending, setIsResending] = React.useState(false);
@@ -30,8 +32,9 @@ export default function AccountVerificationPage() {
       const response = await api.post('/auth/send-activation-token');
       toast.success(response.data.message, { duration: 5000 });
       setTimerActive(true);
-    } catch (e: any) {
-      toast.error(e.response.data.message, { duration: 5000 });
+    } catch (e: unknown) {
+      const error = e as AxiosError<ErrorResponse>;
+      toast.error(error.response?.data.message, { duration: 5000 });
     }
     finally {
       setIsResending(false)

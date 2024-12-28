@@ -17,12 +17,13 @@ api.interceptors.response.use(
       try {
         await api.post('/auth/refresh');
         return axios(error.config);
-      } catch (e: any) {
-        console.log(e);
-        return Promise.reject(error);
+      } catch (e: unknown) {
+        // Redirect to login page when refresh token fails
+        window.location.href = '/login';
+        return Promise.reject(e);
       }
     }
 
     return Promise.reject(error);
   }
-)
+);

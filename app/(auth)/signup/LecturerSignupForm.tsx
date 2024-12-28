@@ -8,6 +8,8 @@ import { EyeClosed, Eye } from 'lucide-react';
 import { api } from '@/lib/axiosConfig';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
+import { ErrorResponse } from '@/app/interfaces/errorInterface';
 
 interface LecturerSignupFormProps {
   email: string;
@@ -39,13 +41,14 @@ export default function LecturerSignupForm() {
     try {
       await api.post('/auth/register-lecturer', data);
       router.push('/verification');
-    } catch (e: any) {
-      if (e.response.data.message) {
-        toast.error(e.response.data.message, { duration: 5000 });
+    } catch (e: unknown) {
+      const error = e as AxiosError<ErrorResponse>;
+      if (error.response?.data.message) {
+        toast.error(error.response.data.message, { duration: 5000 });
         return;
       }
 
-      Object.entries(e.response.data).forEach(([field, messages]) => {
+      Object.entries(error.response?.data ?? {}).forEach(([field, messages]) => {
         setError(field as keyof LecturerSignupFormProps, {
           type: 'server',
           message: Array.isArray(messages) ? messages[0] : messages
