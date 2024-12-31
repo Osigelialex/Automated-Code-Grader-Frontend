@@ -32,7 +32,7 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginFormProps) => {
     try {
       await api.post('/auth/login', data);
-      router.replace('/dashboard');
+      router.replace('/dashboard/student');
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
       if (error.response?.data.message === "Account not activated") {

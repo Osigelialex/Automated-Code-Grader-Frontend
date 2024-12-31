@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from 'sonner';
 
-const roboto = Roboto({ subsets: ['latin'], weight: "400"})
+const poppins = Poppins({ subsets: ['latin'], weight: "400"})
 
 export const metadata: Metadata = {
   title: "CheckMate",
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.className}`}>
+      <body className={`${poppins.className}`}>
         <Toaster position="top-center" />
         {children}
       </body>

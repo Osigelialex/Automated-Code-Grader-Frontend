@@ -4,11 +4,11 @@ import SideNavigationBar from './SideNavigationBar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className='min-h-screen'>
+    <div>
       <TopNavigationBar />
-      <div className='grid'>
+      <div className='flex'>
         <SideNavigationBar />
-        <div className='px-8 py-12 lg:py-20'>
+        <div className='px-8 py-12 lg:py-20 flex-grow'>
           {children}
         </div>
       </div>
