@@ -1,60 +1,65 @@
 'use client'
 import { api } from '@/lib/axiosConfig';
 import React, { useEffect } from 'react';
-import Image from 'next/image';
+import { IProfile } from '@/app/interfaces/profileInterface'
 import Loading from '@/app/loading';
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  course_code: string;
-  course_unit: number;
-  course_join_code: string;
-}
+import { AxiosError } from 'axios';
+import { ErrorResponse } from '@/app/interfaces/errorInterface';
+import { toast } from 'sonner';
+import ScoreStatistic from '../components/score_statistic';
+import QuickStatistic from '../components/quick_statistic';
+import { Bell} from 'lucide-react';
 
 export default function Dashboard() {
-  const [courses, setCourses] = React.useState<Course[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [profile, setProfile] = React.useState<IProfile | null>();
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const response = await api.get('/courses/enrolled');
-      setCourses(response.data);
-      setLoading(false);
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const profile = await api.get<IProfile>('/auth/profile');
+        setProfile(profile.data);
+      } catch (e: unknown) {
+        const error = e as AxiosError<ErrorResponse>;
+        const errorMessage = error.response?.data.message || 'Failed to load profile';
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    fetchCourses();
+    fetchProfile();
   }, []);
 
   if (loading) {
-    return (
-      <Loading />
-    )
+    return <Loading />
   }
 
   return (
-    <div className="w-full flex flex-col items-center justify-center min-h-full">
-      {courses.length === 0 ? (
-        <>
-          <Image
-            src='/not-found.gif'
-            width={150}
-            height={150}
-            alt='not-found'
-            priority
-          />
-          <h2 className='text-xl font-bold mb-4'>No courses enrolled.</h2>
-          <p>Click the <span className='text-2xl font-bold'>+</span> icon to enroll for a course</p>
-        </>
-    ) : (
-      courses.map((course, id) => (
-        <div key={id} className="card w-80">
-          <h2 className="text-lg font-bold">{course.title}</h2>
-          <p>{course.description}</p>
+    <div className="w-full min-h-screen bg-secondary py-8 sm:px-14 space-y-8">
+      <div className='flex justify-between items-center'>
+        <div className='space-y-2'>
+          <h1 className='font-bold text-xl'>Welcome, {profile?.first_name}</h1>
+          <p className="text-sm text-gray-600">
+            Let’s ace those code submissions!
+          </p>
         </div>
-      ))
-    )}
-  </div>
+
+        <div className='flex items-center gap-5'>
+          <Bell size={18}/>
+          <div className='bg-primary w-8 h-8 grid place-items-center text-white text-lg cursor-pointer'>
+            {profile?.first_name[0]}
+          </div>
+        </div>
+      </div>
+      <div className='grid sm:grid-cols-4 gap-3'>
+        <QuickStatistic heading='Total Submissions' value={10} />
+        <QuickStatistic heading='Average Score' value={80} trend={5} />
+        <QuickStatistic heading='Pending Assignments' value={2} />
+        <QuickStatistic heading='Failed Assignments' value={2} trend={-10}/>
+      </div>
+      <ScoreStatistic />
+    </div>
   )
 }
