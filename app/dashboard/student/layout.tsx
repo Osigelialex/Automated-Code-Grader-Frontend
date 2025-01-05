@@ -6,7 +6,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="h-screen flex">
       <SideNavigationBar />
       
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto min-h-screen dark:bg-base-200 bg-secondary">
         {children}
       </div>
     </div>

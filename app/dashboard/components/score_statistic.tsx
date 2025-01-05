@@ -14,7 +14,7 @@ const data = [
 
 const ScoreStatistic = () => {
   return (
-    <div className="w-full h-[300px] bg-white rounded-lg p-4">
+    <div className="w-full h-[300px] bg-base-100 rounded-lg p-4">
       <h1 className='font-bold mb-4'>Score Statistic</h1>
       <ResponsiveContainer width="100%" height="80%">
         <AreaChart

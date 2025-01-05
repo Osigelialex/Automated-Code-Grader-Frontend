@@ -37,11 +37,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-secondary py-8 sm:px-14 space-y-8">
+    <div className="py-8 sm:px-10 space-y-8">
       <div className='flex justify-between items-center'>
         <div className='space-y-2'>
           <h1 className='font-bold text-xl'>Welcome, {profile?.first_name}</h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm">
             Let’s ace those code submissions!
           </p>
         </div>

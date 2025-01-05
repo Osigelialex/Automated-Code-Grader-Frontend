@@ -17,10 +17,17 @@ import { ErrorResponse } from '@/app/interfaces/errorInterface'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
+interface ILink {
+  name: string;
+  path: string;
+  icon: any
+}
+
 const SideNavigationBar = () => {
-  const [active, setActive] = React.useState<string>('Dashboard');
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const open = sidebarStore((state) => state.open);
+  const activeLink = sidebarStore((state) => state.activeLink);
+  const setActiveLink = sidebarStore((state) => state.setActiveLink);
   const toggleSidebar = sidebarStore((state) => state.toggleSidebar);
   const router = useRouter();
 
@@ -38,37 +45,42 @@ const SideNavigationBar = () => {
     }
   }
 
+  const handleLinkClicked = (link: ILink) => {
+    setActiveLink(link.name);
+    router.push(link.path);
+  }
+
   const sideBarLinks = [
     {
       name: 'Dashboard',
       icon: LayoutDashboard,
-      path: '/dashboard'
+      path: '/dashboard/student'
     },
     {
       name: 'Courses',
       icon: BookOpen,
-      path: '/courses'
+      path: '/dashboard/student/courses'
     },
     {
       name: 'Assignments',
       icon: ClipboardList,
-      path: '/assignments'
+      path: '#'
     },
     {
       name: 'Analytics',
       icon: ChartNoAxesCombined,
-      path: '/analytics'
+      path: '#'
     },
     {
       name: 'Settings',
       icon: Settings,
-      path: '/settings'
+      path: '#'
     }
   ]
 
   return (
     <aside 
-      className={`bg-white border-r border-gray-200 h-screen transition-all duration-300 ease-in-out relative ${open ? 'w-64' : 'w-20'}`}
+      className={` border-r border-base-200 h-screen transition-all duration-300 ease-in-out relative ${open ? 'w-64' : 'w-20'}`}
     >
       {/* Toggle Button */}
       <button 
@@ -104,13 +116,13 @@ const SideNavigationBar = () => {
             return (
               <div
                 key={index}
-                onClick={() => setActive(link.name)}
+                onClick={() => handleLinkClicked(link)}
                 className={`
                   group flex items-center gap-3 
                   px-4 py-3 
                   rounded-lg cursor-pointer 
                   transition-all duration-200
-                  ${active === link.name ? 'font-extrabold' : 'text-gray-500' }
+                  ${activeLink === link.name ? 'font-extrabold' : 'text-gray-500' }
                   ${!open && 'justify-center px-2'}
                 `}
               >
@@ -127,14 +139,14 @@ const SideNavigationBar = () => {
       </div>
 
       {/* Logout Section */}
-      <div className="absolute bottom-0 w-full p-4 border-t border-gray-200">
+      <div className="absolute bottom-0 w-full p-4 border-t border-base-200">
         <div
           className={`
             flex items-center gap-3 
             px-4 py-3 
             rounded-lg cursor-pointer 
             transition-all duration-200
-            text-gray-500 hover:bg-red-50
+            text-gray-500 hover:bg-red-400 hover:text-white
             ${!open && 'justify-center px-2'}
           `}
           onClick={() => (document.getElementById('log_out_modal') as HTMLDialogElement).showModal()}
@@ -146,13 +158,13 @@ const SideNavigationBar = () => {
 
       {/* Logout Modal */}
       <dialog id="log_out_modal" className="modal">
-        <div className="modal-box bg-white p-6 rounded-lg shadow-xl">
-          <h3 className="text-xl font-bold text-gray-900">Confirm Logout</h3>
+        <div className="modal-box bg-base-100 p-6 rounded-lg shadow-xl">
+          <h3 className="text-xl font-bold">Confirm Logout</h3>
           <p className="mt-2 text-gray-600">Are you sure you want to logout of your account?</p>
           <div className="mt-6 flex justify-end gap-3">
             <button 
               onClick={() => (document.getElementById('log_out_modal') as HTMLDialogElement).close()}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="px-4 py-3 text-sm font-medium bg-base-200 rounded-lg focus:outline-none"
             >
               Cancel
             </button>
@@ -163,8 +175,7 @@ const SideNavigationBar = () => {
             >
               {isLoggingOut ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Logging out...
+                  <span className="w-4 h-4 border-2 border-base-200 border-t-transparent rounded-full animate-spin"></span>
                 </span>
               ) : (
                 'Logout'

@@ -10,15 +10,15 @@ export default {
     extend: {
       colors: {
         primary: "#3b82f6",
-        secondary: "#f3f4f6"
+        secondary: "#f8f9fb"
       },
     },
   },
   plugins: [
     require('daisyui')
   ],
-  daisyui: {
-    themes: ["light"],
-    darkTheme: "light",
-  },
+  // daisyui: {
+  //   themes: ["light"],
+  //   darkTheme: "light",
+  // },
 } satisfies Config;
