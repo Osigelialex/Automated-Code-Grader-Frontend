@@ -5,9 +5,9 @@ import { api } from '@/lib/axiosConfig';
 import { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Book, Users } from 'lucide-react';
+import CourseCard from '../../components/course_card';
 
-interface ICourse {
+export interface ICourse {
   id: string;
   title: string;
   description: string;
@@ -27,7 +27,6 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [joinCode, setJoinCode] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedView, setSelectedView] = useState<'grid' | 'list'>('list');
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -92,32 +91,12 @@ export default function CoursesPage() {
               View your enrolled courses and manage them here.
             </p>
           </div>
-          <div className='flex items-center gap-4'>
-            <div className='flex gap-2 bg-base-100 p-2 rounded-lg'>
-              <button
-                className={`p-2 rounded ${selectedView === 'grid' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setSelectedView('grid')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                className={`p-2 rounded ${selectedView === 'list' ? 'bg-primary text-white' : ''}`}
-                onClick={() => setSelectedView('list')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-            <button
-              className='bg-primary px-3 py-2 text-white rounded-md'
-              onClick={() => openModal()}
-            >
-              Enroll in Course
-            </button>
-          </div>
+          <button
+            className='bg-primary px-3 py-2 text-white rounded-md'
+            onClick={() => openModal()}
+          >
+            Enroll in Course
+          </button>
         </div>
 
         <div className="w-full md:w-1/2">
@@ -172,70 +151,10 @@ export default function CoursesPage() {
           <h1 className='font-bold text-lg'>No Courses Enrolled</h1>
           <p>When you enroll into a course, you can see them here</p>
         </div>
-      ) : selectedView === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <div key={course.id} className="card bg-base-100">
-              <div className="card-body">
-                <div className="flex justify-between items-start">
-                  <div className='space-y-2'>
-                    <h2 className="card-title text-lg">{course.title}</h2>
-                    <div className='space-x-2'>
-                      <span className="text-sm badge badge-outline">{course.course_code}</span>
-                      <span className="badge bg-primary text-white">{course.course_units} Units</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-600 mt-2 line-clamp-2">{course.description}</p>
-                <div className="divider"></div>
-                <div className="text-sm space-y-2">
-                  <p className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">Lecturer:</span>
-                    {course.lecturer.first_name} {course.lecturer.last_name}
-                  </p>
-                </div>
-                <div className="card-actions mt-4">
-                  <button className="bg-primary text-white px-3 py-2 rounded-md">
-                    View Course
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       ) : (
         <div className="space-y-4">
-          {filteredCourses.map((course) => (
-            <div key={course.id} className="bg-base-100 p-6 rounded-lg transition-all">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-bold">{course.title}</h3>
-                    <span className="badge badge-outline">{course.course_code}</span>
-                    <span className="badge bg-primary text-white">{course.course_units} Units</span>
-                  </div>
-                  <p className="text-gray-600 mb-4 text-sm">{course.description}</p>
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-primary" />
-                      <span className="text-sm">
-                        <span className="font-semibold">Lecturer:</span> {course.lecturer.first_name} {course.lecturer.last_name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Book className="h-4 w-4 text-primary" />
-                      <span className="text-sm">
-                        <span className="font-semibold">Department:</span> {course.lecturer.department}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <button className="bg-primary text-white px-4 py-2 rounded-md">
-                  View Course
-                </button>
-              </div>
-            </div>
+          {filteredCourses.map((course, key) => (
+            <CourseCard key={key} course={course} />
           ))}
         </div>
       )}

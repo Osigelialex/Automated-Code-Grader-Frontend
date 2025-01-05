@@ -3,9 +3,9 @@ import React from 'react'
 import {
   LayoutDashboard,
   BookOpen,
-  ClipboardList,
+  FileCheck,
   Settings,
-  ChartNoAxesCombined,
+  Info,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen
@@ -62,13 +62,8 @@ const SideNavigationBar = () => {
       path: '/dashboard/student/courses'
     },
     {
-      name: 'Assignments',
-      icon: ClipboardList,
-      path: '#'
-    },
-    {
-      name: 'Analytics',
-      icon: ChartNoAxesCombined,
+      name: 'Submissions',
+      icon: FileCheck,
       path: '#'
     },
     {
