@@ -5,7 +5,6 @@ import {
   BookOpen,
   FileCheck,
   Settings,
-  Info,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen
@@ -20,7 +19,7 @@ import { useRouter } from 'next/navigation'
 interface ILink {
   name: string;
   path: string;
-  icon: any
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 const SideNavigationBar = () => {
