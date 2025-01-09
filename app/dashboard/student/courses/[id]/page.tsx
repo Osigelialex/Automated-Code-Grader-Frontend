@@ -2,25 +2,15 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { api } from '@/lib/axiosConfig'
-import { ICourse } from '../page'
 import { AxiosError } from 'axios'
 import { ErrorResponse } from '@/app/interfaces/errorInterface'
 import Loading from '@/app/loading'
 import AssignmentCard from '@/app/dashboard/components/assignment_card'
 import CourseDetailCard from '@/app/dashboard/components/course_detail_card'
 import NoAssignmentCard from '@/app/dashboard/components/no_assignment_card'
-
-export interface IAssignment {
-  id: string;
-  title: string;
-  description: string;
-  max_score: 100;
-  programming_language: string;
-  language_id: number;
-  is_draft: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { IAssignment } from '@/app/dashboard/interfaces/assignment'
+import { ICourse } from '@/app/dashboard/interfaces/course'
+import Image from 'next/image'
 
 export default function CourseDetails() {
   const [course, setCourse] = React.useState<ICourse | null>(null);
@@ -59,7 +49,7 @@ export default function CourseDetails() {
     return (
       <div className="p-4">
         <div className="alert alert-error">
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <Image src='/error.svg' alt='Error' width={50} height={50} />
           <span>{error}</span>
         </div>
       </div>
@@ -69,9 +59,7 @@ export default function CourseDetails() {
   return (
     <div className='min-h-screen py-8 px-4 sm:px-10'>
       <CourseDetailCard course={course!} />
-
       <h3 className="text-lg ml-3 font-bold mb-6">Assignments</h3>
-
       {assignments.length === 0 ? (
         <NoAssignmentCard />
       ) : (

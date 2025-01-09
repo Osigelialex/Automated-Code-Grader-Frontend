@@ -6,21 +6,7 @@ import { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import CourseCard from '../../components/course_card';
-
-export interface ICourse {
-  id: string;
-  title: string;
-  description: string;
-  course_code: string;
-  course_units: number;
-  lecturer: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    department: string;
-  };
-  course_join_code: string;
-}
+import { ICourse } from '../../interfaces/course';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<ICourse[] | []>([]);

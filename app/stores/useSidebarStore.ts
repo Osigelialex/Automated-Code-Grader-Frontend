@@ -8,7 +8,7 @@ interface SidebarState {
 }
 
 const sidebarStore = create<SidebarState>((set) => ({
-  open: true,
+  open: false,
   activeLink: 'Dashboard',
   setActiveLink: (link: string) => set(() => ({ activeLink: link })),
   toggleSidebar: () => set((state) => ({ open: !state.open })),
