@@ -14,7 +14,7 @@ import { api } from '@/lib/axiosConfig'
 import { AxiosError } from 'axios'
 import { ErrorResponse } from '@/app/interfaces/errorInterface'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 interface ILink {
   name: string;
@@ -25,10 +25,9 @@ interface ILink {
 const SideNavigationBar = () => {
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const open = sidebarStore((state) => state.open);
-  const activeLink = sidebarStore((state) => state.activeLink);
-  const setActiveLink = sidebarStore((state) => state.setActiveLink);
   const toggleSidebar = sidebarStore((state) => state.toggleSidebar);
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     try {
@@ -45,7 +44,6 @@ const SideNavigationBar = () => {
   }
 
   const handleLinkClicked = (link: ILink) => {
-    setActiveLink(link.name);
     router.push(link.path);
   }
 
@@ -116,7 +114,7 @@ const SideNavigationBar = () => {
                   px-4 py-3 
                   rounded-lg cursor-pointer 
                   transition-all duration-200
-                  ${activeLink === link.name ? 'font-extrabold' : 'text-gray-500' }
+                  ${pathname === link.path ? 'font-extrabold' : 'text-gray-500' }
                   ${!open && 'justify-center px-2'}
                 `}
               >

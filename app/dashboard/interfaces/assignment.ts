@@ -1,5 +1,17 @@
 import { ICourse } from "./course";
 
+export interface ISubmissionResponse {
+  submission_id: string;
+  score: number;
+  submission_result: [
+    {
+      output: string;
+      time: string;
+      status: string;
+    }
+  ]
+}
+
 export interface IAssignment {
   id: string;
   title: string;
@@ -30,4 +42,9 @@ export interface IAssignmentDetails {
       output: string;
     }
   ]
+}
+
+export interface ITestCase {
+  input: string;
+  output: string;
 }

@@ -9,6 +9,7 @@ import Loading from '@/app/loading';
 import { IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
+import { ISubmissionResponse } from '@/app/dashboard/interfaces/assignment';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -17,12 +18,15 @@ export default function AssignmentDetailPage() {
   const [code, setCode] = useState<string>('# Start coding here');
   const [feedback, setFeedback] = useState<string>('');
   const [isFeedbackLoading, setIsFeedbackLoading] = useState<boolean>(false);
+  const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [activeTestCase, setActiveTestCase] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
   const { id } = useParams();
 
   useEffect(() => {
     const fetchAssignmentData = async () => {
       setLoading(true);
-  
       try {
         const response = await api.get(`/assignments/${id}`);
         setAssignment(response.data);
@@ -46,9 +50,8 @@ export default function AssignmentDetailPage() {
   const handleGetFeedback = async () => {
     setIsFeedbackLoading(true);
     try {
-      // Simulated feedback for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setFeedback("Your code is shit!, Why don't u quit coding?");
+      setFeedback("Your code needs improvement. Consider optimizing the time complexity.");
     } catch (error) {
       console.log(error);
       toast.error("Failed to get feedback");
@@ -57,10 +60,20 @@ export default function AssignmentDetailPage() {
     }
   };
 
-  if (loading) {
-    return <Loading />
+  const handleSubmitSolution = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
+      setSubmissionResponse(response.data);
+    } catch (e: unknown) {
+      const error = e as AxiosError<ErrorResponse>;
+      toast.error(error.response?.data.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
+  if (loading) return <Loading />;
   if (error) {
     return (
       <div className="p-4">
@@ -155,18 +168,20 @@ export default function AssignmentDetailPage() {
                     onClick={handleGetFeedback}
                     disabled={isFeedbackLoading}
                   >
-                    {isFeedbackLoading ? 
-                      <span className="loading loading-spinner"></span> : 
+                    {isFeedbackLoading ?
+                      <span className="loading loading-spinner"></span> :
                       'Get Feedback'
                     }
                   </button>
                   <button
                     className="btn btn-primary"
-                    onClick={() => {
-                      toast.success('Solution submitted successfully!');
-                    }}
+                    onClick={handleSubmitSolution}
+                    disabled={isSubmitting}
                   >
-                    Submit Solution
+                    {isSubmitting ?
+                      <span className="loading loading-spinner"></span> :
+                      'Submit Solution'
+                    }
                   </button>
                 </div>
               </div>
@@ -177,37 +192,127 @@ export default function AssignmentDetailPage() {
           <div className="lg:col-span-5">
             {/* Test Cases Section */}
             <div className="card bg-base-100 shadow-xl mb-6">
-              <div className="card-body">
-                <h2 className="card-title">Test Cases</h2>
-                <div className="space-y-4">
-                  {assignment!.test_cases.map((testCase, index) => (
-                    <div
+              <div className="card-body p-0">
+                <div className="tabs tabs-bordered">
+                  {assignment!.test_cases.map((_, index) => (
+                    <button
                       key={index}
-                      className="card bg-base-200"
+                      className={`tab tab-lifted ${activeTestCase === index ? 'tab-active' : ''}`}
+                      onClick={() => setActiveTestCase(index)}
                     >
-                      <div className="card-body p-4">
-                        <div className="mb-3">
-                          <h4 className="font-semibold mb-2">
-                            Input:
-                          </h4>
-                          <pre className="bg-base-100 p-2 rounded-lg text-sm overflow-x-auto">
-                            {testCase.input}
+                      Test {index + 1}
+                    </button>
+                  ))}
+                </div>
+                <div className="p-4">
+                  <div className="space-y-4">
+                    {/* Test Case Section */}
+                    <div className="collapse collapse-arrow bg-base-200">
+                      <input type="checkbox" defaultChecked />
+                      <div className="collapse-title font-medium">
+                        Sample Test Case
+                      </div>
+                      <div className="collapse-content space-y-4">
+                        <div className="bg-base-300 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium mb-2">Input:</h3>
+                          <pre className="overflow-x-auto">
+                            <code>{assignment!.test_cases[activeTestCase].input}</code>
                           </pre>
                         </div>
-                        <div>
-                          <h4 className="font-semibold mb-2">
-                            Expected Output:
-                          </h4>
-                          <pre className="bg-base-100 p-2 rounded-lg text-sm overflow-x-auto">
-                            {testCase.output}
+                        <div className="bg-base-300 p-4 rounded-lg">
+                          <h3 className="text-sm font-medium mb-2">Expected Output:</h3>
+                          <pre className="overflow-x-auto">
+                            <code>{assignment!.test_cases[activeTestCase].output}</code>
                           </pre>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Test Result Section */}
+            {submissionResponse && (
+              <div className="card bg-base-100 shadow-xl mb-6">
+                <div className="card-body">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="card-title">Test Results</h2>
+                    <div className="tabs tabs-boxed">
+                      <button
+                        className={`tab ${viewMode === 'visible' ? 'tab-active' : ''}`}
+                        onClick={() => setViewMode('visible')}
+                      >
+                        Sample Tests
+                      </button>
+                      <button
+                        className={`tab ${viewMode === 'all' ? 'tab-active' : ''}`}
+                        onClick={() => setViewMode('all')}
+                      >
+                        All Tests
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {submissionResponse.submission_result
+                      .filter((_, index) =>
+                        viewMode === 'all' ||
+                        index < assignment!.test_cases.length
+                      )
+                      .map((result, index) => (
+                        <div key={index} className="collapse collapse-arrow bg-base-200">
+                          <input type="checkbox" />
+                          <div className={`collapse-title font-medium flex items-center gap-2 ${result.status === 'Accepted' ? 'text-success' : 'text-error'
+                            }`}>
+                            <div className={`badge ${result.status === 'Accepted' ? 'badge-success' : 'badge-error'
+                              }`}>
+                              {result.status}
+                            </div>
+                            Test {index + 1}
+                            {index >= assignment!.test_cases.length && (
+                              <span className="badge badge-neutral">Hidden</span>
+                            )}
+                            <span className="text-base-content/60 text-sm ml-auto">
+                              Time: {result.time}
+                            </span>
+                          </div>
+                          <div className="collapse-content space-y-4">
+                            <div className="bg-base-300 p-4 rounded-lg">
+                              <h3 className="text-sm font-medium mb-2">Your Output:</h3>
+                              <pre className="overflow-x-auto">
+                                <code>{result.output}</code>
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Score Display */}
+            {submissionResponse && (
+              <div className="card bg-base-100 shadow-xl mb-6">
+                <div className="card-body">
+                  <h2 className="card-title">Submission Summary</h2>
+                  <div className="stats shadow">
+                    <div className="stat">
+                      <div className="stat-title">Score</div>
+                      <div className="stat-value">{submissionResponse.score}</div>
+                    </div>
+                    <div className="stat">
+                      <div className="stat-title">Tests Passed</div>
+                      <div className="stat-value text-success">
+                        {submissionResponse.submission_result.filter(r => r.status === 'Accepted').length}
+                        <span className="text-base">/{submissionResponse.submission_result.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Feedback Section */}
             <div className="card bg-base-100 shadow-xl">
