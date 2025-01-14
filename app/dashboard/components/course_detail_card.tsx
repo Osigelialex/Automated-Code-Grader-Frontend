@@ -1,5 +1,5 @@
 import React from 'react'
-import { ICourse } from '../student/courses/page'
+import { ICourse } from '../interfaces/course'
 
 export default function CourseDetailCard({ course }: { course: ICourse }) {
   return (
@@ -10,7 +10,7 @@ export default function CourseDetailCard({ course }: { course: ICourse }) {
             <h2 className="card-title text-lg">{course?.title}</h2>
             <p className="text-base-content/70 mt-2 text-sm">{course?.description}</p>
           </div>
-          <div className="badge bg-primary text-white">{course?.course_code}</div>
+          <div className="badge badge-primary">{course?.course_code}</div>
         </div>
 
         <div className="divider"></div>

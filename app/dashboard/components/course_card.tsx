@@ -1,5 +1,5 @@
 import React from 'react'
-import { ICourse } from '../student/courses/page'
+import { ICourse } from '../interfaces/course';
 import { Users, Book, Info } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -13,7 +13,7 @@ export default function CourseCard({ course }:{ course: ICourse }) {
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-bold">{course.title}</h3>
             <span className="badge badge-outline">{course.course_code}</span>
-            <span className="badge bg-primary text-white">{course.course_units} Units</span>
+            <span className="badge badge-primary">{course.course_units} Units</span>
           </div>
           <p className="text-gray-600 mb-4 text-sm">{course.description}</p>
           <div className="flex items-center gap-6">

@@ -33,7 +33,7 @@ export default function AssignmentCard({ assignment }: { assignment: IAssignment
         <p className="text-base-content/70 text-sm">{assignment.description}</p>
         <div className="divider my-2"></div>
         <div className="flex justify-between items-center text-sm">
-          <div className="badge bg-primary text-white">{assignment.programming_language}</div>
+          <div className="badge badge-primary">{assignment.programming_language}</div>
           <span>Max Score: {assignment.max_score}</span>
         </div>
         <div className="text-xs text-base-content/50 mt-2">

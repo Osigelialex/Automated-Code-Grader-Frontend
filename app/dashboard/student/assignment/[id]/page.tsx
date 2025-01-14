@@ -10,6 +10,7 @@ import { IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse } from '@/app/dashboard/interfaces/assignment';
+import { BrainCog } from 'lucide-react';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -17,7 +18,6 @@ export default function AssignmentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState<string>('# Start coding here');
   const [feedback, setFeedback] = useState<string>('');
-  const [isFeedbackLoading, setIsFeedbackLoading] = useState<boolean>(false);
   const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [activeTestCase, setActiveTestCase] = useState<number>(0);
@@ -47,24 +47,25 @@ export default function AssignmentDetailPage() {
     }
   };
 
-  const handleGetFeedback = async () => {
-    setIsFeedbackLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setFeedback("Your code needs improvement. Consider optimizing the time complexity.");
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to get feedback");
-    } finally {
-      setIsFeedbackLoading(false);
-    }
-  };
-
   const handleSubmitSolution = async () => {
+    if (code === '# Start coding here') {
+      toast.error('Please write some code before submitting');
+      return;
+    }
+    
+    setFeedback('');
     setIsSubmitting(true);
     try {
       const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
       setSubmissionResponse(response.data);
+
+      const submissionId = response.data.submission_id
+
+      // Only Generate feedback for incorrect code
+      if (response.data.score != 100) {
+        const feedbackResponse = await api.post<{ feedback: string }>(`/submissions/${submissionId}/feedback`);
+        setFeedback(feedbackResponse.data.feedback);
+      }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
       toast.error(error.response?.data.message);
@@ -132,8 +133,8 @@ export default function AssignmentDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Editor Section */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 space-y-6">
+            {/* Editor Section */}
             <div className="card bg-base-100 shadow-xl">
               <div className="card-body">
                 <h2 className="card-title">Solution Editor</h2>
@@ -164,16 +165,6 @@ export default function AssignmentDetailPage() {
                 </div>
                 <div className="card-actions justify-end mt-4 gap-2">
                   <button
-                    className="btn btn-outline"
-                    onClick={handleGetFeedback}
-                    disabled={isFeedbackLoading}
-                  >
-                    {isFeedbackLoading ?
-                      <span className="loading loading-spinner"></span> :
-                      'Get Feedback'
-                    }
-                  </button>
-                  <button
                     className="btn btn-primary"
                     onClick={handleSubmitSolution}
                     disabled={isSubmitting}
@@ -183,6 +174,31 @@ export default function AssignmentDetailPage() {
                       'Submit Solution'
                     }
                   </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body p-0">
+                <div className="collapse collapse-arrow">
+                  <input type="checkbox" defaultChecked />
+                  <div className="collapse-title text-xl font-medium p-6">
+                  <div className="flex items-center gap-2">
+                      <BrainCog />
+                      <span className="text-xl font-medium">AI Feedback</span>
+                    </div>
+                  </div>
+                  <div className="collapse-content">
+                    {feedback ? (
+                      <div className="prose p-6 rounded-lg bg-base-200">
+                        <p>{feedback}</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-base-content/60">
+                        <p>Feedback from CheckMate AI will be displayed here. Stay tuned!</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -313,22 +329,6 @@ export default function AssignmentDetailPage() {
                 </div>
               </div>
             )}
-
-            {/* Feedback Section */}
-            <div className="card bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">AI Feedback</h2>
-                {feedback ? (
-                  <div className="prose">
-                    <p>{feedback}</p>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-base-content/60">
-                    <p>Click &quot;Get Feedback&quot; to receive AI-powered suggestions for your code.</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>
