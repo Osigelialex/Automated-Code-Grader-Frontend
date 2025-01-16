@@ -10,7 +10,7 @@ import { IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog } from 'lucide-react';
+import { BrainCog, BadgeCheck } from 'lucide-react';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -21,24 +21,41 @@ export default function AssignmentDetailPage() {
   const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [activeTestCase, setActiveTestCase] = useState<number>(0);
+  const [solved, setSolved] = useState<boolean>(false);
+
   const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
   const { id } = useParams();
 
   useEffect(() => {
-    const fetchAssignmentData = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/assignments/${id}`);
-        setAssignment(response.data);
+        const [assignmentResponse, progressResponse] = await Promise.all([
+          api.get(`/assignments/${id}`),
+          api.get(`/assignments/${id}/progress`)
+        ]);
+
+        setAssignment(assignmentResponse.data);
+
+        if (progressResponse.data?.code) {
+          setCode(progressResponse.data.code);
+        }
+
+        if (progressResponse.data?.solved) {
+          setSolved(progressResponse.data.solved);
+        }
         setLoading(false);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
         toast.error(error.response?.data.message, { duration: 5000 });
         setError(error.response?.data.message || "Could not fetch assignment details");
+        setLoading(false);
       }
     }
 
-    fetchAssignmentData();
+    if (id) {
+      fetchData();
+    }
   }, [id]);
 
   const handleEditorChange = (value: string | undefined) => {
@@ -52,7 +69,7 @@ export default function AssignmentDetailPage() {
       toast.error('Please write some code before submitting');
       return;
     }
-    
+
     setFeedback('');
     setIsSubmitting(true);
     try {
@@ -100,7 +117,18 @@ export default function AssignmentDetailPage() {
       <div className="bg-base-100 shadow-sm mx-4">
         <div className="max-w-7xl mx-auto py-6 px-4">
           <div className="flex flex-col gap-4">
-            <h1 className="text-xl font-bold">{assignment!.title}</h1>
+            <div className="flex justify-between items-center">
+              <h1 className="text-xl font-bold">{assignment!.title}</h1>
+              {solved && (
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <BadgeCheck color="green" size={50} />
+                  </div>
+                  <span className="font-semibold text-2xl">🎉</span>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-wrap gap-4">
               <div className="badge badge-lg gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -183,7 +211,7 @@ export default function AssignmentDetailPage() {
                 <div className="collapse collapse-arrow">
                   <input type="checkbox" defaultChecked />
                   <div className="collapse-title text-xl font-medium p-6">
-                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <BrainCog />
                       <span className="text-xl font-medium">AI Feedback</span>
                     </div>

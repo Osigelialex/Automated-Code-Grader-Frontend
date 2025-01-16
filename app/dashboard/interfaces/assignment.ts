@@ -48,3 +48,8 @@ export interface ITestCase {
   input: string;
   output: string;
 }
+
+export interface IProgress {
+  code: string;
+  solved: string;
+}
