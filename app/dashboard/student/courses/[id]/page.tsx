@@ -6,19 +6,20 @@ import { AxiosError } from 'axios'
 import { ErrorResponse } from '@/app/interfaces/errorInterface'
 import Loading from '@/app/loading'
 import CourseDetailCard from '@/app/dashboard/components/course_detail_card'
-import { IAssignment } from '@/app/dashboard/interfaces/assignment'
+import { IPaginatedAssignmentList } from '@/app/dashboard/interfaces/assignment'
 import { ICourse } from '@/app/dashboard/interfaces/course'
 import Image from 'next/image'
-
-const ITEMS_PER_PAGE = 10;
+import { Search, CircleArrowRight, CircleArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function CourseDetails() {
   const [course, setCourse] = React.useState<ICourse | null>(null);
-  const [assignments, setAssignments] = React.useState<IAssignment[] | []>([]);
+  const [assignments, setAssignments] = React.useState<IPaginatedAssignmentList>({ results: [], count: 0, next: null, previous: null });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [currentPage, setCurrentPage] = React.useState(1);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const router = useRouter();
   const { id } = useParams();
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function CourseDetails() {
           api.get(`/courses/${id}/assignments`)
         ]);
         setCourse(courseResponse.data);
-        setAssignments(assignmentsResponse.data['results']);
+        setAssignments(assignmentsResponse.data);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
         setError(error.response?.data.message || 'An error occurred while fetching data');
@@ -42,20 +43,31 @@ export default function CourseDetails() {
     fetchData();
   }, [id]);
 
-  const filteredAssignments = assignments.filter(assignment =>
+  const filteredAssignments = assignments.results.filter(assignment =>
     assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     assignment.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredAssignments.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentAssignments = filteredAssignments.slice(startIndex, endIndex);
+  const fetchPage = async (link: string) => {
+    try {
+      const response = await api.get(link);
+      setAssignments(response.data);
+      setLoading(false);
+    } catch (e: unknown) {
+      const error = e as AxiosError<ErrorResponse>;
+      toast.error(error.response?.data.message || 'An error occurred while fetching data');
+    }
+  }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleNext = async () => {
+    if (!assignments.next) return;
+    await fetchPage(assignments.next!);
   };
+
+  const handlePrevious = async () => {
+    if (!assignments.previous) return;
+    await fetchPage(assignments.previous!);
+  }
 
   if (loading) {
     return <Loading />
@@ -75,34 +87,25 @@ export default function CourseDetails() {
   return (
     <div className='min-h-screen py-8 px-4 sm:px-10 space-y-8'>
       <CourseDetailCard course={course!} />
-      
-      <div className="space-y-4">
+
+      <div className="space-y-4 mx-3">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold">Assignments</h3>
           <div className="w-full md:w-1/3">
             <label className="input input-bordered flex items-center gap-2">
-              <input 
-                type="text" 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="grow" 
-                placeholder="Search assignments..." 
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="grow"
+                placeholder="Search assignments..."
               />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                className="h-4 w-4 opacity-70">
-                <path
-                  fillRule="evenodd"
-                  d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-                  clipRule="evenodd" />
-              </svg>
+              <Search />
             </label>
           </div>
         </div>
 
-        {assignments.length === 0 ? (
+        {assignments.results.length === 0 ? (
           <div className="text-center py-8">
             <h3 className="font-semibold text-lg">No Assignments Yet</h3>
             <p className="text-gray-600">Assignments will appear here when they are added to the course.</p>
@@ -110,62 +113,36 @@ export default function CourseDetails() {
         ) : (
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
-              <thead>
+              <thead className='bg-base-100'>
                 <tr>
                   <th>Title</th>
                   <th>Description</th>
                   <th>Max Score</th>
                   <th>Language</th>
-                  <th>Status</th>
                   <th>Created At</th>
                 </tr>
               </thead>
               <tbody>
-                {currentAssignments.map((assignment) => (
-                  <tr key={assignment.id} className="hover:bg-base-200 cursor-pointer">
+                {filteredAssignments.map((assignment) => (
+                  <tr key={assignment.id} className="hover:bg-base-100 cursor-pointer" onClick={() => router.push(`/dashboard/student/assignment/${assignment.id}`)}>
                     <td className="font-medium">{assignment.title}</td>
                     <td className="max-w-md truncate">{assignment.description}</td>
                     <td>{assignment.max_score}</td>
                     <td>{assignment.programming_language || 'Not specified'}</td>
-                    <td>
-                      <div className={`badge ${assignment.is_draft ? 'badge-warning' : 'badge-success'}`}>
-                        {assignment.is_draft ? 'Draft' : 'Published'}
-                      </div>
-                    </td>
                     <td>{new Date(assignment.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="join mt-4 flex justify-center">
-                <button
-                  className="join-item btn"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  «
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    className={`join-item btn ${currentPage === page ? 'btn-active' : ''}`}
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  className="join-item btn"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  »
-                </button>
-              </div>
-            )}
+            <div className="flex justify-center align-middle mt-5">
+              {assignments.previous && (
+                <CircleArrowLeft size={24} onClick={handlePrevious} className='cursor-pointer' />
+              )}
+              {assignments.next && (
+                <CircleArrowRight size={24} onClick={handleNext} className='cursor-pointer' />
+              )}
+            </div>
           </div>
         )}
       </div>

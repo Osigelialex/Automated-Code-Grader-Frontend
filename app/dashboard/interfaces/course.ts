@@ -12,3 +12,10 @@ export interface ICourse {
   };
   course_join_code: string;
 }
+
+export interface IPaginatedCourseList {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ICourse[] | [];
+}

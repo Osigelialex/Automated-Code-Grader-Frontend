@@ -7,7 +7,7 @@ export default function CourseCard({ course }:{ course: ICourse }) {
   const router = useRouter();
 
   return (
-    <div className="bg-base-100 p-6 rounded-lg transition-all">
+    <div className="bg-base-100 p-6 rounded-sm transition-all">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">

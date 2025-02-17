@@ -24,6 +24,13 @@ export interface IAssignment {
   updated_at: string;
 }
 
+export interface IPaginatedAssignmentList {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: IAssignment[] | [];
+}
+
 export interface IAssignmentDetails {
   id: string;
   title: string;
