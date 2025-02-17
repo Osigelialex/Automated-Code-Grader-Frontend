@@ -18,7 +18,7 @@ interface LecturerSignupFormProps {
   first_name: string;
   last_name: string;
   department: string;
-  staffid: string;
+  staff_id: string;
 }
 
 export default function LecturerSignupForm() {
@@ -43,6 +43,7 @@ export default function LecturerSignupForm() {
       router.push('/verification');
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
+      console.log(error.response?.data);
       if (error.response?.data.message) {
         toast.error(error.response.data.message, { duration: 5000 });
         return;
@@ -103,19 +104,19 @@ export default function LecturerSignupForm() {
         <p className='text-sm text-red-400'>{errors.department?.message}</p>
       </div>
       <div>
-        <label htmlFor="staffid" className='block text-sm'>Staff id</label>
+        <label htmlFor="staff_id" className='block text-sm'>Staff id</label>
         <input
-          {...register('staffid')}
-          id='staffid'
+          {...register('staff_id')}
+          id='staff_id'
           type="text"
           maxLength={7}
           className="input input-bordered w-full"
           onChange={(e) => {
             handleStaffIdInput(e);
-            register('staffid').onChange(e);
+            register('staff_id').onChange(e);
           }}
         />
-        <p className='text-sm text-red-400'>{errors.staffid?.message}</p>
+        <p className='text-sm text-red-400'>{errors.staff_id?.message}</p>
       </div>
 
       <div>

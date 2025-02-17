@@ -5,20 +5,25 @@ import { api } from '@/lib/axiosConfig';
 import { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import CourseCard from '../../components/course_card';
 import { ICourse } from '../../interfaces/course';
+import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react'
+
+const ITEMS_PER_PAGE = 10;
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<ICourse[] | []>([]);
   const [loading, setLoading] = useState(true);
   const [joinCode, setJoinCode] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const response = await api.get('/courses/enrolled');
-        setCourses(response.data);
+        setCourses(response.data['results']);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
         toast.error(error.response?.data.message);
@@ -40,9 +45,11 @@ export default function CoursesPage() {
     try {
       await api.post('/courses/join', { course_join_code: joinCode });
       toast.success('Successfully enrolled in course');
+  
       const response = await api.get('/courses/enrolled');
       setCourses(response.data);
       setJoinCode('');
+      closeModal();
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
       toast.error(error.response?.data.message || 'Failed to enroll in course');
@@ -63,6 +70,16 @@ export default function CoursesPage() {
     course.lecturer.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentCourses = filteredCourses.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return <Loading />
   }
@@ -78,7 +95,7 @@ export default function CoursesPage() {
             </p>
           </div>
           <button
-            className='bg-primary px-3 py-2 text-white rounded-md'
+            className='btn btn-primary'
             onClick={() => openModal()}
           >
             Enroll in Course
@@ -87,26 +104,23 @@ export default function CoursesPage() {
 
         <div className="w-full md:w-1/2">
           <label className="input input-bordered flex items-center gap-2">
-            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="grow" placeholder="Search" />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="h-4 w-4 opacity-70">
-              <path
-                fillRule="evenodd"
-                d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-                clipRule="evenodd" />
-            </svg>
+            <input 
+              type="text" 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="grow" 
+              placeholder="Search courses..." 
+            />
+            <Search />
           </label>
         </div>
       </div>
 
       {/* Enroll Modal */}
       <dialog id="enroll_modal" className="modal">
-        <div className="modal-box bg-base-100 p-6 rounded-lg shadow-xl">
+        <div className="modal-box">
           <button
-            className="btn btn-sm btn-circle absolute right-2 top-2"
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             onClick={() => closeModal()}
           >
             ✕
@@ -124,7 +138,7 @@ export default function CoursesPage() {
               <button type="button" className="btn" onClick={() => closeModal()}>
                 Cancel
               </button>
-              <button type="submit" className="bg-primary text-white px-4 py-2 rounded-md hover:opacity-70">
+              <button type="submit" className="btn btn-primary">
                 Join Course
               </button>
             </div>
@@ -138,10 +152,61 @@ export default function CoursesPage() {
           <p>When you enroll into a course, you can see them here</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredCourses.map((course, key) => (
-            <CourseCard key={key} course={course} />
-          ))}
+        <div className="overflow-x-auto">
+          <table className="table table-sm">
+            <thead>
+              <tr>
+                <th>Course Code</th>
+                <th>Title</th>
+                <th>Units</th>
+                <th>Lecturer</th>
+                <th>Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentCourses.map((course) => (
+                <tr
+                  key={course.id}
+                  className="hover:bg-base-100 cursor-pointer"
+                  onClick={() => router.push(`/dashboard/student/courses/${course.id}`)}>
+                  <td>{course.course_code}</td>
+                  <td>{course.title}</td>
+                  <td>{course.course_units}</td>
+                  <td>{`${course.lecturer.first_name} ${course.lecturer.last_name}`}</td>
+                  <td>{course.lecturer.department}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="join mt-4 flex justify-center">
+              <button
+                className="join-item btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                «
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`join-item btn ${currentPage === page ? 'btn-active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                className="join-item btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                »
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

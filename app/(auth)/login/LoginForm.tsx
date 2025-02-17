@@ -17,6 +17,11 @@ interface LoginFormProps {
   password: string;
 }
 
+interface LoginResponse {
+  message: string;
+  role: string
+}
+
 export default function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const router = useRouter();
@@ -31,8 +36,13 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginFormProps) => {
     try {
-      await api.post('/auth/login', data);
-      router.replace('/dashboard/student');
+      const response = await api.post<LoginResponse>('/auth/login', data);
+      const role = response.data.role;
+      if (role === 'LECTURER') {
+        router.replace('/dashboard/lecturer');
+      } else {
+        router.replace('/dashboard/student');
+      }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
       if (error.response?.data.message === "Account not activated") {

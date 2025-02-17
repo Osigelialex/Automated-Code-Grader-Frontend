@@ -27,7 +27,7 @@ export const LecturerSingupFormSchema = z.object({
   first_name: z.string().min(2, { message: 'First name must be at least 2 characters' }),
   last_name: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   department: z.string().min(2),
-  staffid: z.string().regex(/^\d{2}\/\d{4}$/, { message: 'Please enter a valid staff id' }),
+  staff_id: z.string().regex(/^\d{2}\/\d{4}$/, { message: 'Please enter a valid staff id' }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],

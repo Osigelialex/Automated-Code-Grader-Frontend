@@ -6,11 +6,10 @@ import { AxiosError } from 'axios';
 import { ErrorResponse } from '@/app/interfaces/errorInterface';
 import { toast } from 'sonner';
 import Loading from '@/app/loading';
-import { IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
-import { ISubmissionResponse } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog, BadgeCheck } from 'lucide-react';
+import { ISubmissionResponse, IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
+import { BrainCog } from 'lucide-react';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -74,6 +73,7 @@ export default function AssignmentDetailPage() {
     setIsSubmitting(true);
     try {
       const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
+      console.log(response.data)
       setSubmissionResponse(response.data);
 
       const submissionId = response.data.submission_id
@@ -85,6 +85,7 @@ export default function AssignmentDetailPage() {
       }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
+      console.log(error.response?.data.message)
       toast.error(error.response?.data.message);
     } finally {
       setIsSubmitting(false);
@@ -120,11 +121,8 @@ export default function AssignmentDetailPage() {
             <div className="flex justify-between items-center">
               <h1 className="text-xl font-bold">{assignment!.title}</h1>
               {solved && (
-                <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <BadgeCheck color="green" size={50} />
-                  </div>
-                  <span className="font-semibold text-2xl">🎉</span>
+                <div className='badge bade-lg badge-success'>
+                  Solved
                 </div>
               )}
             </div>
