@@ -68,25 +68,26 @@ export default function AssignmentDetailPage() {
       toast.error('Please write some code before submitting');
       return;
     }
-
+  
     setFeedback('');
     setIsSubmitting(true);
     try {
       const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
-      console.log(response.data)
+      
       setSubmissionResponse(response.data);
-
-      const submissionId = response.data.submission_id
-
-      // Only Generate feedback for incorrect code
-      if (response.data.score != 100) {
-        const feedbackResponse = await api.post<{ feedback: string }>(`/submissions/${submissionId}/feedback`);
+  
+      if (response.data.score !== 100) {
+        const feedbackResponse = await api.post<{ feedback: string }>(
+          `/submissions/${response.data.submission_id}/feedback`,
+          {},
+          { withCredentials: true }
+        );
         setFeedback(feedbackResponse.data.feedback);
       }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
-      console.log(error.response?.data.message)
-      toast.error(error.response?.data.message);
+      console.error('Submission error:', error);
+      toast.error(error.response?.data.message || 'An error occurred during submission');
     } finally {
       setIsSubmitting(false);
     }
