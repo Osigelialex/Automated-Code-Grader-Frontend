@@ -9,7 +9,7 @@ import Loading from '@/app/loading';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse, IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog } from 'lucide-react';
+import { BrainCog, CloudUpload, Play } from 'lucide-react';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -68,14 +68,14 @@ export default function AssignmentDetailPage() {
       toast.error('Please write some code before submitting');
       return;
     }
-  
+
     setFeedback('');
     setIsSubmitting(true);
     try {
       const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
-      
+
       setSubmissionResponse(response.data);
-  
+
       if (response.data.score !== 100) {
         const feedbackResponse = await api.post<{ feedback: string }>(
           `/submissions/${response.data.submission_id}/feedback`,
@@ -117,14 +117,14 @@ export default function AssignmentDetailPage() {
     <div className="min-h-screen bg-base-200">
       {/* Header Section */}
       <div className="bg-base-100 shadow-sm mx-4">
-        <div className="max-w-7xl mx-auto py-6 px-4">
+        <div className="max-w-7xl mx-auto py-3 px-4">
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold">{assignment!.title}</h1>
+              <h1 className="text-md font-bold">{assignment!.title}</h1>
               {solved && (
-                <div className='badge bade-lg badge-success'>
+                <p className='text-md text-success font-bold'>
                   Solved
-                </div>
+                </p>
               )}
             </div>
 
@@ -150,17 +150,17 @@ export default function AssignmentDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-6 px-4">
-        <div className="mb-6">
+      <div className="max-w-7xl mx-auto py-3 px-4">
+        <div className="mb-2">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <p>{assignment!.description}</p>
+              <p className='text-sm'>{assignment!.description}</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+          <div className="lg:col-span-7 space-y-2">
             {/* Editor Section */}
             <div className="card bg-base-100 shadow-xl">
               <div className="card-body">
@@ -191,15 +191,33 @@ export default function AssignmentDetailPage() {
                   />
                 </div>
                 <div className="card-actions justify-end mt-4 gap-2">
-                  <button
-                    className="btn btn-primary"
+                <button
+                    className="bg-base-200 px-7 py-2 flex items-center gap-2"
                     onClick={handleSubmitSolution}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ?
-                      <span className="loading loading-spinner"></span> :
-                      'Submit Solution'
-                    }
+                    {isSubmitting ? (
+                      <span className="loading loading-spinner"></span>
+                    ) : (
+                      <>
+                        <Play size={18} />
+                        Run
+                      </>
+                    )}
+                  </button>
+                  <button
+                    className="bg-base-200 px-7 py-2 text-success flex items-center gap-2"
+                    onClick={handleSubmitSolution}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <span className="loading loading-spinner"></span>
+                    ) : (
+                      <>
+                        <CloudUpload size={18} />
+                        Submit
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -248,7 +266,7 @@ export default function AssignmentDetailPage() {
                   ))}
                 </div>
                 <div className="p-4">
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {/* Test Case Section */}
                     <div className="collapse collapse-arrow bg-base-200">
                       <input type="checkbox" defaultChecked />
@@ -277,9 +295,9 @@ export default function AssignmentDetailPage() {
 
             {/* Test Result Section */}
             {submissionResponse && (
-              <div className="card bg-base-100 shadow-xl mb-6">
+              <div className="card bg-base-100 shadow-xl mb-2">
                 <div className="card-body">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-2">
                     <h2 className="card-title">Test Results</h2>
                     <div className="tabs tabs-boxed">
                       <button
@@ -308,10 +326,10 @@ export default function AssignmentDetailPage() {
                           <input type="checkbox" />
                           <div className={`collapse-title font-medium flex items-center gap-2 ${result.status === 'Accepted' ? 'text-success' : 'text-error'
                             }`}>
-                            <div className={`badge ${result.status === 'Accepted' ? 'badge-success' : 'badge-error'
+                            <p className={`${result.status === 'Accepted' ? 'text-success' : 'text-red-400'
                               }`}>
-                              {result.status}
-                            </div>
+                              {result.status === 'Accepted' ? 'Accepted' : 'Failed'}
+                            </p>
                             Test {index + 1}
                             {index >= assignment!.test_cases.length && (
                               <span className="badge badge-neutral">Hidden</span>
@@ -337,7 +355,7 @@ export default function AssignmentDetailPage() {
 
             {/* Score Display */}
             {submissionResponse && (
-              <div className="card bg-base-100 shadow-xl mb-6">
+              <div className="card bg-base-100 shadow-xl mb-2">
                 <div className="card-body">
                   <h2 className="card-title">Submission Summary</h2>
                   <div className="stats shadow">
