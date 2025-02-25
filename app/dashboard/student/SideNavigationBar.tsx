@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   LayoutDashboard,
   BookOpen,
@@ -7,7 +7,8 @@ import {
   Settings,
   LogOut,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  GraduationCap
 } from 'lucide-react'
 import sidebarStore from '@/app/stores/useSidebarStore'
 import { api } from '@/lib/axiosConfig'
@@ -24,10 +25,27 @@ interface ILink {
 
 const SideNavigationBar = () => {
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
   const open = sidebarStore((state) => state.open);
   const toggleSidebar = sidebarStore((state) => state.toggleSidebar);
   const router = useRouter();
   const pathname = usePathname();
+  
+  // Check if device is on mobile and handle resize events
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -45,6 +63,10 @@ const SideNavigationBar = () => {
 
   const handleLinkClicked = (link: ILink) => {
     router.push(link.path);
+    // Auto close sidebar on mobile after navigation
+    if (isMobile && open) {
+      toggleSidebar();
+    }
   }
 
   const sideBarLinks = [
@@ -71,82 +93,104 @@ const SideNavigationBar = () => {
   ]
 
   return (
-    <aside 
-      className={` border-r border-base-200 h-screen transition-all duration-300 ease-in-out relative ${open ? 'w-64' : 'w-20'}`}
-    >
-      {/* Toggle Button */}
-      <button 
+    <>
+      {/* Mobile Overlay - only visible when sidebar is open on mobile */}
+      {isMobile && open && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20"
+          onClick={toggleSidebar}
+        />
+      )}
+    
+      <aside 
         className={`
-          absolute -right-3 top-6
-          flex items-center justify-center
-          w-6 h-6 
-          rounded-full
-          bg-primary hover:bg-primary/90
-          text-white
-          shadow-lg hover:shadow-xl
-          transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-        `} 
-        onClick={toggleSidebar}
+          border-r border-base-200
+          transition-all duration-300 ease-in-out
+          fixed md:relative
+          z-30 md:z-auto
+          bg-white dark:bg-base-100
+          h-screen
+          ${open ? 'w-64' : 'w-0 md:w-20'} 
+          ${isMobile && !open ? '-translate-x-full' : 'translate-x-0'}
+        `}
       >
-        {open ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
-      </button>
-
-      {/* Logo Area */}
-      <div className={`py-6 ${open ? 'px-8' : 'px-4'}`}>
-        <div className={`flex items-center ${!open && 'justify-center'}`}>
-          <div className=" w-8 h-8 bg-primary rounded-lg"></div>
-          {open && <span className="px-4 text-lg font-semibold">CheckMate</span>}
-        </div>
-      </div>
-
-      {/* Navigation Links */}
-      <div className="px-4 py-6">
-        <nav className="space-y-2">
-          {sideBarLinks.map((link, index) => {
-            const Icon = link.icon
-            return (
-              <div
-                key={index}
-                onClick={() => handleLinkClicked(link)}
-                className={`
-                  group flex items-center gap-3 
-                  px-4 py-3 
-                  rounded-lg cursor-pointer 
-                  transition-all duration-200
-                  ${pathname === link.path ? 'font-extrabold' : 'text-gray-500' }
-                  ${!open && 'justify-center px-2'}
-                `}
-              >
-                <Icon size={20} className="min-w-[20px]" />
-                {open && (
-                  <span className="truncate text-sm">
-                    {link.name}
-                  </span>
-                )}
-              </div>
-            )
-          })}
-        </nav>
-      </div>
-
-      {/* Logout Section */}
-      <div className="absolute bottom-0 w-full p-4 border-t border-base-200">
-        <div
+        {/* Toggle Button - Hidden on mobile, using a mobile menu button instead */}
+        <button 
           className={`
-            flex items-center gap-3 
-            px-4 py-3 
-            rounded-lg cursor-pointer 
+            hidden md:flex
+            absolute -right-3 top-6
+            items-center justify-center
+            w-6 h-6 
+            rounded-full
+            bg-primary hover:bg-primary/90
+            text-white
+            shadow-lg hover:shadow-xl
             transition-all duration-200
-            text-gray-500 hover:bg-red-400 hover:text-white
-            ${!open && 'justify-center px-2'}
-          `}
-          onClick={() => (document.getElementById('log_out_modal') as HTMLDialogElement).showModal()}
+            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+          `} 
+          onClick={toggleSidebar}
         >
-          <LogOut size={20} className="min-w-[20px]" />
-          {open && <span className="font-medium truncate">Logout</span>}
+          {open ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
+        </button>
+
+        {/* Logo Area */}
+        {open && <div className={`py-6 px-8`}>
+          <div className={`flex items-center`}>
+            <div className="w-8 h-8 bg-primary rounded-lg grid place-items-center">
+              <GraduationCap size={20} className="text-white" />
+            </div>
+            {open && <span className="px-4 text-lg font-semibold">CheckMate</span>}
+          </div>
+        </div>}
+
+        {/* Navigation Links */}
+        <div className="px-4 py-6 overflow-y-auto">
+          <nav className="space-y-2">
+            {sideBarLinks.map((link, index) => {
+              const Icon = link.icon
+              return (
+                <div
+                  key={index}
+                  onClick={() => handleLinkClicked(link)}
+                  className={`
+                    group flex items-center gap-3 
+                    px-4 py-3 
+                    rounded-lg cursor-pointer 
+                    transition-all duration-200
+                    ${pathname === link.path ? 'font-extrabold' : 'text-gray-500' }
+                    ${!open && 'md:justify-center md:px-2'}
+                  `}
+                >
+                  <Icon size={20} className="min-w-[20px]" />
+                  {open && (
+                    <span className="truncate text-sm">
+                      {link.name}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </nav>
         </div>
-      </div>
+
+        {/* Logout Section */}
+        <div className="absolute bottom-0 w-full p-4 border-t border-base-200">
+          <div
+            className={`
+              flex items-center gap-3 
+              px-4 py-3 
+              rounded-lg cursor-pointer 
+              transition-all duration-200
+              text-gray-500 hover:bg-red-400 hover:text-white
+              ${!open && 'md:justify-center md:px-2'}
+            `}
+            onClick={() => (document.getElementById('log_out_modal') as HTMLDialogElement).showModal()}
+          >
+            <LogOut size={20} className="min-w-[20px]" />
+            {open && <span className="font-medium truncate">Logout</span>}
+          </div>
+        </div>
+      </aside>
 
       {/* Logout Modal */}
       <dialog id="log_out_modal" className="modal">
@@ -176,7 +220,7 @@ const SideNavigationBar = () => {
           </div>
         </div>
       </dialog>
-    </aside>
+    </>
   )
 }
 
