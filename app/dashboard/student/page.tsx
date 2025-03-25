@@ -8,6 +8,7 @@ import { ErrorResponse } from '@/app/interfaces/errorInterface';
 import { toast } from 'sonner';
 import QuickStatistic from '../components/quick_statistic';
 import { IQuickStats } from '../interfaces/quickstats';
+import { IAssignmentStatusData } from "../interfaces/student-assignment-stats";
 import { Bell } from 'lucide-react';
 import {
   XAxis,
@@ -49,8 +50,12 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<IProfile | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const [assignmentStatusData, setAssignmentStatusData] = useState<IAssignmentStatusData>({
+    completed: 0, pending: 0, overdue: 0
+  })
   const [quickstats, setQuickstats] = useState<IQuickStats>({
-    average_score: 0, non_optimal_submissions: 0, pending_assignments: 0, total_submissions: 0});
+    average_score: 0, non_optimal_submissions: 0, pending_assignments: 0, total_submissions: 0
+  });
 
   const pieChartId = React.useId();
   const barChartId = React.useId();
@@ -76,14 +81,16 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        const [profileResponse, statsResponse] = await Promise.all([
+
+        const [profileResponse, statsResponse, assignmentStatus] = await Promise.all([
           api.get<IProfile>('/auth/profile'),
-          api.get<IQuickStats>('analytics/student-dashboard-quick-stats')
+          api.get<IQuickStats>('analytics/student-dashboard-quick-stats'),
+          api.get<IAssignmentStatusData>('analytics/student-assignment-status')
         ]);
-        
+
         setProfile(profileResponse.data);
         setQuickstats(statsResponse.data);
+        setAssignmentStatusData(assignmentStatus.data);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
         const errorMessage = error.response?.data.message || 'Failed to load data';
@@ -92,7 +99,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
 
@@ -101,9 +108,9 @@ export default function Dashboard() {
   }
 
   const statusData: StatusData[] = [
-    { name: "Completed", value: 60 },
-    { name: "Pending", value: 30 },
-    { name: "Overdue", value: 10 },
+    { name: "Completed", value: assignmentStatusData.completed },
+    { name: "Pending", value: assignmentStatusData.pending },
+    { name: "Overdue", value: assignmentStatusData.overdue },
   ];
 
   const scoreData: ScoreData[] = [
@@ -125,7 +132,6 @@ export default function Dashboard() {
     percent,
     name
   }: CustomizedLabelProps) => {
-    // For small screens, don't render labels at all
     if (dimensions.width < 300) return null;
 
     const RADIAN = Math.PI / 180;

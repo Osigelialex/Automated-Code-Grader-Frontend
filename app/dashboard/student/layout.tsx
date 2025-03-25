@@ -6,12 +6,12 @@ import sidebarStore from '@/app/stores/useSidebarStore';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const toggleSidebar = sidebarStore((state) => state.toggleSidebar);
-  
+
   return (
     <div className="h-screen flex flex-col md:flex-row bg-white dark:bg-base-100">
       {/* Mobile Header with Menu Button */}
       <div className="md:hidden flex items-center p-4 border-b border-base-200">
-        <button 
+        <button
           onClick={toggleSidebar}
           className="p-2 rounded-lg hover:bg-base-200 transition-colors"
           aria-label="Toggle Menu"
@@ -25,10 +25,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="ml-2 font-semibold">CheckMate</span>
         </div>
       </div>
-      
+
       {/* Sidebar */}
       <SideNavigationBar />
-      
+
       {/* Main Content */}
       <div className="flex-grow overflow-y-auto min-h-0 md:min-h-screen dark:bg-base-200 bg-secondary">
         {children}

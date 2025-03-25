@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { IPaginatedCourseList } from '../../interfaces/course';
 import { useRouter } from 'next/navigation';
 import { Search, CircleArrowRight, CircleArrowLeft } from 'lucide-react'
+import { Button } from '@/app/components/ui/button';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<IPaginatedCourseList>({ results: [], count: 0, next: null, previous: null });
@@ -95,33 +96,33 @@ export default function CoursesPage() {
   return (
     <div className='min-h-screen py-8 px-4 sm:px-10 space-y-8'>
       <div className='flex flex-col gap-6'>
-        <div className='flex items-center justify-between flex-wrap gap-4'>
-          <div className='space-y-2'>
-            <h1 className='font-bold text-xl'>My Courses</h1>
-            <p className="text-sm text-gray-600">
-              View your enrolled courses and manage them here.
-            </p>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+          <div>
+            <h1 className="text-xl font-bold">My Courses</h1>
+            <p className="text-xs sm:text-sm text-gray-600">View and manage your courses here</p>
           </div>
-          <button
-            className='btn btn-primary'
-            onClick={() => openModal()}
-          >
-            Enroll in Course
-          </button>
-        </div>
-
-        <div className="w-full md:w-1/2">
-          <label className="input input-bordered flex items-center gap-2">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="grow"
-              placeholder="Search courses..."
+          <div>
+            <Button
+              type="button"
+              value="Enroll in Course"
+              onClick={() => openModal()}
+              width="flex items-center gap-2"
             />
-            <Search />
-          </label>
+          </div>
         </div>
+      </div>
+
+      <div className="w-full md:w-1/2">
+        <label className="input input-bordered flex items-center gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="grow"
+            placeholder="Search courses..."
+          />
+          <Search />
+        </label>
       </div>
 
       {/* Enroll Modal */}
@@ -154,49 +155,51 @@ export default function CoursesPage() {
         </div>
       </dialog>
 
-      {courses.results.length === 0 ? (
-        <div className='flex flex-col items-center justify-center min-h-[60vh]'>
-          <h1 className='font-bold text-lg'>No Courses Enrolled</h1>
-          <p>When you enroll into a course, you can see them here</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="table table-zebra w-full">
-            <thead className='bg-base-100'>
-              <tr>
-                <th>Course Code</th>
-                <th>Title</th>
-                <th>Units</th>
-                <th>Lecturer</th>
-                <th>Department</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCourses.map((course) => (
-                <tr
-                  key={course.id}
-                  className="cursor-pointer"
-                  onClick={() => router.push(`/dashboard/student/courses/${course.id}`)}>
-                  <td>{course.course_code}</td>
-                  <td>{course.title}</td>
-                  <td>{course.course_units}</td>
-                  <td>{`${course.lecturer.first_name} ${course.lecturer.last_name}`}</td>
-                  <td>{course.lecturer.department}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="flex justify-center align-middle mt-5">
-            {courses.previous && (
-              <CircleArrowLeft size={24} onClick={handlePrevious} className='cursor-pointer' />
-            )}
-            {courses.next && (
-              <CircleArrowRight size={24} onClick={handleNext} className='cursor-pointer' />
-            )}
+      {
+        courses.results.length === 0 ? (
+          <div className='flex flex-col items-center justify-center min-h-[60vh]'>
+            <h1 className='font-bold text-lg'>No Courses Enrolled</h1>
+            <p>When you enroll into a course, you can see them here</p>
           </div>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table table-zebra w-full">
+              <thead className='bg-base-100'>
+                <tr>
+                  <th>Course Code</th>
+                  <th>Title</th>
+                  <th>Units</th>
+                  <th>Lecturer</th>
+                  <th>Department</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCourses.map((course) => (
+                  <tr
+                    key={course.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/dashboard/student/courses/${course.id}`)}>
+                    <td>{course.course_code}</td>
+                    <td>{course.title}</td>
+                    <td>{course.course_units}</td>
+                    <td>{`${course.lecturer.first_name} ${course.lecturer.last_name}`}</td>
+                    <td>{course.lecturer.department}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex justify-center align-middle mt-5">
+              {courses.previous && (
+                <CircleArrowLeft size={24} onClick={handlePrevious} className='cursor-pointer' />
+              )}
+              {courses.next && (
+                <CircleArrowRight size={24} onClick={handleNext} className='cursor-pointer' />
+              )}
+            </div>
+          </div>
+        )
+      }
+    </div >
   )
 }

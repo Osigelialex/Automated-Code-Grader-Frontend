@@ -7,7 +7,8 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-  GraduationCap
+  GraduationCap,
+  Notebook
 } from 'lucide-react'
 import sidebarStore from '@/app/stores/useSidebarStore'
 import { api } from '@/lib/axiosConfig'
@@ -29,19 +30,19 @@ const SideNavigationBar = () => {
   const toggleSidebar = sidebarStore((state) => state.toggleSidebar);
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Check if we're on mobile and handle resize events
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     // Initial check
     checkIfMobile();
-    
+
     // Add resize listener
     window.addEventListener('resize', checkIfMobile);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
@@ -75,9 +76,14 @@ const SideNavigationBar = () => {
       path: '/dashboard/lecturer'
     },
     {
-      name: 'Assignments',
+      name: 'Courses',
       icon: BookOpen,
-      path: '#'
+      path: '/dashboard/lecturer/courses'
+    },
+    {
+      name: 'Assignments',
+      icon: Notebook,
+      path: '/dashboard/lecturer/assignments'
     },
     {
       name: 'Settings',
@@ -90,13 +96,13 @@ const SideNavigationBar = () => {
     <>
       {/* Mobile Overlay - only visible when sidebar is open on mobile */}
       {isMobile && open && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20"
           onClick={toggleSidebar}
         />
       )}
-    
-      <aside 
+
+      <aside
         className={`
           border-r border-base-200
           transition-all duration-300 ease-in-out
@@ -109,7 +115,7 @@ const SideNavigationBar = () => {
         `}
       >
         {/* Toggle Button - Hidden on mobile, using a mobile menu button instead */}
-        <button 
+        <button
           className={`
             hidden md:flex
             absolute -right-3 top-6
@@ -121,7 +127,7 @@ const SideNavigationBar = () => {
             shadow-lg hover:shadow-xl
             transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-          `} 
+          `}
           onClick={toggleSidebar}
         >
           {open ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
@@ -151,7 +157,7 @@ const SideNavigationBar = () => {
                     px-4 py-3 
                     rounded-lg cursor-pointer 
                     transition-all duration-200
-                    ${pathname === link.path ? 'font-extrabold' : 'text-gray-500' }
+                    ${pathname === link.path ? 'font-extrabold' : 'text-gray-500'}
                     ${!open && 'md:justify-center md:px-2'}
                   `}
                 >
@@ -192,14 +198,14 @@ const SideNavigationBar = () => {
           <h3 className="text-xl font-bold">Confirm Logout</h3>
           <p className="mt-2 text-gray-600">Are you sure you want to logout of your account?</p>
           <div className="mt-6 flex justify-end gap-3">
-            <button 
+            <button
               onClick={() => (document.getElementById('log_out_modal') as HTMLDialogElement).close()}
               className="px-4 py-3 text-sm font-medium bg-base-200 rounded-lg focus:outline-none"
             >
               Cancel
             </button>
-            <button 
-              onClick={handleLogout} 
+            <button
+              onClick={handleLogout}
               disabled={isLoggingOut}
               className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
             >

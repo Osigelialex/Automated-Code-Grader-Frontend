@@ -9,7 +9,8 @@ import Loading from '@/app/loading';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse, IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog, CloudUpload, Play } from 'lucide-react';
+import { BrainCog, CloudUpload, Play, Trophy, Clock } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
@@ -17,11 +18,14 @@ export default function AssignmentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState<string>('# Start coding here');
   const [feedback, setFeedback] = useState<string>('');
+  const [feedbackLoading, setFeedbackLoading] = useState<boolean>(true);
   const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isTestSubmissionSubmitting, setIsTestSubmissionSubmitting] = useState<boolean>(false);
   const [activeTestCase, setActiveTestCase] = useState<number>(0);
   const [solved, setSolved] = useState<boolean>(false);
 
+  const { theme } = useTheme();
   const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
   const { id } = useParams();
 
@@ -63,33 +67,57 @@ export default function AssignmentDetailPage() {
     }
   };
 
-  const handleSubmitSolution = async () => {
+  const handleSubmitSolution = async (is_test: boolean) => {
     if (code === '# Start coding here') {
       toast.error('Please write some code before submitting');
       return;
     }
 
     setFeedback('');
-    setIsSubmitting(true);
+    if (is_test === true) {
+      setIsTestSubmissionSubmitting(true)
+    } else {
+      setIsSubmitting(true);
+    }
+
     try {
-      const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit`, { code });
-
+      const response = await api.post<ISubmissionResponse>(`/assignments/${id}/submit?is_test=${is_test}`, { code });
       setSubmissionResponse(response.data);
+      setIsTestSubmissionSubmitting(false);
+      setFeedbackLoading(true);
 
-      if (response.data.score !== 100) {
-        const feedbackResponse = await api.post<{ feedback: string }>(
-          `/submissions/${response.data.submission_id}/feedback`,
-          {},
-          { withCredentials: true }
-        );
-        setFeedback(feedbackResponse.data.feedback);
+      // Fetch personalized feedback from LLM
+      if (is_test === false) {
+        try {
+          const feedbackResponse = await api.post<{ feedback: string }>(
+            `/submissions/${response.data.submission_id}/feedback`,
+            {},
+            { withCredentials: true }
+          );
+          setFeedback(feedbackResponse.data.feedback);
+        } catch (e: unknown) {
+          setFeedback('Oops...Checkmate AI is not available at the moment');
+        }
+      } else {
+        try {
+          const feedbackResponse = await api.post<{ feedback: string }>(`/feedback/test-run`, {
+            code: code,
+            description: assignment?.description
+          },
+            { withCredentials: true }
+          );
+          setFeedback(feedbackResponse.data.feedback)
+        } catch (e: unknown) {
+          setFeedback('Oops...Checkmate AI is not available at the moment');
+        }
       }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
-      console.error('Submission error:', error);
       toast.error(error.response?.data.message || 'An error occurred during submission');
     } finally {
+      setIsTestSubmissionSubmitting(false);
       setIsSubmitting(false);
+      setFeedbackLoading(false);
     }
   }
 
@@ -130,15 +158,11 @@ export default function AssignmentDetailPage() {
 
             <div className="flex flex-wrap gap-4">
               <div className="badge badge-lg gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
-                </svg>
+                <Trophy size={15} />
                 {assignment!.max_score} points
               </div>
               <div className="badge badge-lg gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
+                <Clock size={15} />
                 Due {formatDate(assignment!.deadline)}
               </div>
               <div className="badge badge-lg badge-primary">
@@ -154,6 +178,7 @@ export default function AssignmentDetailPage() {
         <div className="mb-2">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
+              <p className='text-red-400'>Be sure of your solution before submitting!!</p>
               <p className='text-sm'>{assignment!.description}</p>
             </div>
           </div>
@@ -167,11 +192,12 @@ export default function AssignmentDetailPage() {
                 <h2 className="card-title">Solution Editor</h2>
                 <div className="h-[600px] w-full">
                   <Editor
+                    width="100%"
                     height="100%"
                     defaultLanguage='python'
                     defaultValue={code}
                     onChange={handleEditorChange}
-                    theme="vs-dark"
+                    theme={theme === 'light' ? 'light' : 'vs-dark'}
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
@@ -191,12 +217,12 @@ export default function AssignmentDetailPage() {
                   />
                 </div>
                 <div className="card-actions justify-end mt-4 gap-2">
-                <button
+                  <button
                     className="bg-base-200 px-7 py-2 flex items-center gap-2"
-                    onClick={handleSubmitSolution}
-                    disabled={isSubmitting}
+                    onClick={() => handleSubmitSolution(true)}
+                    disabled={isSubmitting || isTestSubmissionSubmitting}
                   >
-                    {isSubmitting ? (
+                    {isTestSubmissionSubmitting ? (
                       <span className="loading loading-spinner"></span>
                     ) : (
                       <>
@@ -207,8 +233,8 @@ export default function AssignmentDetailPage() {
                   </button>
                   <button
                     className="bg-base-200 px-7 py-2 text-success flex items-center gap-2"
-                    onClick={handleSubmitSolution}
-                    disabled={isSubmitting}
+                    onClick={() => handleSubmitSolution(false)}
+                    disabled={isSubmitting || isTestSubmissionSubmitting}
                   >
                     {isSubmitting ? (
                       <span className="loading loading-spinner"></span>
@@ -240,7 +266,11 @@ export default function AssignmentDetailPage() {
                       </div>
                     ) : (
                       <div className="text-center py-8 text-base-content/60">
-                        <p>Feedback from CheckMate AI will be displayed here. Stay tuned!</p>
+                        {feedbackLoading ? (
+                          <p>CheckMate AI is brewing a feedback masterpiece...</p>
+                        ) : (
+                          <p>Feedback from CheckMate AI will be displayed here. Stay tuned!</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -324,8 +354,10 @@ export default function AssignmentDetailPage() {
                       .map((result, index) => (
                         <div key={index} className="collapse collapse-arrow bg-base-200">
                           <input type="checkbox" />
-                          <div className={`collapse-title font-medium flex items-center gap-2 ${result.status === 'Accepted' ? 'text-success' : 'text-error'
-                            }`}>
+                          <div
+                            className={`collapse-title font-medium flex items-center gap-2
+                              ${result.status === 'Accepted' ? 'text-success' : 'text-error'
+                              }`}>
                             <p className={`${result.status === 'Accepted' ? 'text-success' : 'text-red-400'
                               }`}>
                               {result.status === 'Accepted' ? 'Accepted' : 'Failed'}

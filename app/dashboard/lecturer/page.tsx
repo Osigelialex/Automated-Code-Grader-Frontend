@@ -1,17 +1,17 @@
 'use client'
 import React, { useEffect, useRef, useState } from "react";
-import { 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  BarChart, 
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
   Bar,
-  ResponsiveContainer 
+  ResponsiveContainer
 } from "recharts";
 import QuickStatistic from "../components/quick_statistic";
 
@@ -41,7 +41,7 @@ type CustomizedLabelProps = {
 export default function Dashboard() {
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
-  
+
   // Generate unique IDs for chart components to avoid conflicts
   const pieChartId = React.useId();
   const barChartId = React.useId();
@@ -76,7 +76,7 @@ export default function Dashboard() {
 
     // Add resize listener
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -102,21 +102,21 @@ export default function Dashboard() {
   }: CustomizedLabelProps) => {
     // For small screens, don't render labels at all
     if (dimensions.width < 300) return null;
-    
+
     const RADIAN = Math.PI / 180;
-    
+
     // For medium screens, render simpler labels
     if (dimensions.width < 400) {
       const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
       const x = cx + radius * Math.cos(-midAngle * RADIAN);
       const y = cy + radius * Math.sin(-midAngle * RADIAN);
-      
+
       return (
-        <text 
-          x={x} 
-          y={y} 
-          fill="white" 
-          textAnchor="middle" 
+        <text
+          x={x}
+          y={y}
+          fill="white"
+          textAnchor="middle"
           dominantBaseline="central"
           fontSize={dimensions.width < 350 ? "8" : "10"}
         >
@@ -124,18 +124,18 @@ export default function Dashboard() {
         </text>
       );
     }
-    
+
     // For larger screens, render full labels
     const radius = innerRadius + (outerRadius - innerRadius) * 0.65;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    
+
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor="middle" 
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
         dominantBaseline="central"
         fontSize="12"
       >
@@ -166,7 +166,7 @@ export default function Dashboard() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Assignment Status Pie Chart */}
-        <div 
+        <div
           className="bg-base-100 p-3 sm:p-4 rounded-lg shadow-md overflow-hidden"
           ref={chartContainerRef}
         >
@@ -188,18 +188,18 @@ export default function Dashboard() {
                   isAnimationActive={false}
                 >
                   {statusData.map((_, index) => (
-                    <Cell 
-                      key={`cell-${pieChartId}-${index}`} 
-                      fill={COLORS[index % COLORS.length]} 
+                    <Cell
+                      key={`cell-${pieChartId}-${index}`}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend 
-                  layout="horizontal" 
-                  verticalAlign="bottom" 
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
                   align="center"
-                  wrapperStyle={{ 
+                  wrapperStyle={{
                     fontSize: dimensions.width < 350 ? '0.7rem' : '0.75rem',
                     paddingTop: '10px'
                   }}
@@ -214,27 +214,27 @@ export default function Dashboard() {
           <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Score Distribution</h2>
           <div className="w-full h-48 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%" key={barChartId}>
-              <BarChart 
-                data={scoreData} 
+              <BarChart
+                data={scoreData}
                 margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="range" 
-                  stroke="#6B7280" 
+                <XAxis
+                  dataKey="range"
+                  stroke="#6B7280"
                   fontSize="0.75rem"
                   tick={{ fill: '#6B7280' }}
                 />
-                <YAxis 
-                  stroke="#6B7280" 
+                <YAxis
+                  stroke="#6B7280"
                   fontSize="0.75rem"
                   tick={{ fill: '#6B7280' }}
                 />
                 <Tooltip cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
-                <Bar 
-                  dataKey="count" 
-                  fill="#00C49F" 
+                <Bar
+                  dataKey="count"
+                  fill="#00C49F"
                   radius={[4, 4, 0, 0]}
                   isAnimationActive={false}
                 />
