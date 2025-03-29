@@ -4,7 +4,7 @@ export interface ICourse {
   description: string;
   course_code: string;
   course_units: number;
-  lecturer: {
+  lecturer?: {
     first_name: string;
     last_name: string;
     email: string;

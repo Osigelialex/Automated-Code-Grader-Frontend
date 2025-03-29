@@ -1,20 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
-import { IPaginatedCourseList } from "../../interfaces/course";
+import { IPaginatedCourseList, ICourse } from "../../interfaces/course";
 import Loading from "@/app/loading";
 import { api } from "@/lib/axiosConfig";
 import {
-  X,
   BookOpen,
   Code,
   Key,
   Trophy,
   Copy,
   Check,
-  Search
+  Search,
+  Trash2,
+  Edit
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-
 
 export default function CoursesPage() {
   const [coursesData, setCoursesData] = useState<IPaginatedCourseList>({
@@ -25,12 +25,21 @@ export default function CoursesPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [formData, setFormData] = useState({
+  const [createFormData, setCreateFormData] = useState({
     title: "",
     description: "",
     course_code: "",
     course_units: 10,
   });
+  const [editFormData, setEditFormData] = useState<ICourse>({
+    id: "",
+    title: "",
+    description: "",
+    course_code: "",
+    course_units: 10,
+    course_join_code: "",
+  });
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -63,11 +72,10 @@ export default function CoursesPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await api.post("/courses", formData);
+      await api.post("/courses", createFormData);
       await fetchCourses();
-      setFormData({ title: "", description: "", course_code: "", course_units: 10 });
+      setCreateFormData({ title: "", description: "", course_code: "", course_units: 10 });
 
-      // close course creation modal
       const modal = document.getElementById("create-course-modal") as HTMLDialogElement;
       modal.close();
     } catch (error) {
@@ -78,14 +86,74 @@ export default function CoursesPage() {
     }
   };
 
-  const handleInputChange = (
+  const handleEditCourse = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.patch(`/courses/${editFormData.id}/edit`, {
+        title: editFormData.title,
+        description: editFormData.description,
+        course_code: editFormData.course_code,
+        course_units: editFormData.course_units
+      });
+      await fetchCourses();
+
+      const modal = document.getElementById("edit-course-modal") as HTMLDialogElement;
+      modal.close();
+    } catch (error) {
+      console.error("Error editing course:", error);
+      alert("Failed to edit course. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      await api.delete(`/courses/${courseToDelete}/delete`);
+      await fetchCourses();
+
+      const modal = document.getElementById("delete-confirmation-modal") as HTMLDialogElement;
+      modal.close();
+      setCourseToDelete(null);
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      alert("Failed to delete course. Please try again.");
+    }
+  };
+
+  const handleCreateInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setCreateFormData({
+      ...createFormData,
       [name]: name === "course_units" ? parseInt(value, 10) || 0 : value,
     });
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData({
+      ...editFormData,
+      [name]: name === "course_units" ? parseInt(value, 10) || 0 : value,
+    });
+  };
+
+  const openEditModal = (course: ICourse) => {
+    setEditFormData(course);
+    const modal = document.getElementById("edit-course-modal") as HTMLDialogElement;
+    modal.showModal();
+  };
+
+  const openDeleteConfirmation = (courseId: string) => {
+    setCourseToDelete(courseId);
+    const modal = document.getElementById("delete-confirmation-modal") as HTMLDialogElement;
+    modal.showModal();
   };
 
   const copyToClipboard = (text: string) => {
@@ -98,9 +166,11 @@ export default function CoursesPage() {
       });
   };
 
-  const filteredCourses = () => {
-    return coursesData.results.filter(course => course.title === searchTerm);
-  }
+  const filteredCourses = coursesData.results.filter(course =>
+    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.course_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen p-3">
@@ -135,7 +205,7 @@ export default function CoursesPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="grow"
-            placeholder="Search courses..."
+            placeholder="Search courses by title, code, or description..."
           />
           <Search />
         </label>
@@ -162,45 +232,60 @@ export default function CoursesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {coursesData.results.map((course) => (
+                {filteredCourses.map((course) => (
                   <div
                     key={course.id}
-                    className="rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 bg-base-100"
+                    className="rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 bg-base-100 relative flex flex-col justify-between"
                   >
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-sm font-semibold">{course.title}</h2>
+                    <div className="absolute top-4 right-4 flex space-x-2">
+                      <button
+                        onClick={() => openEditModal(course)}
+                        className="text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Edit Course"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => openDeleteConfirmation(course.id)}
+                        className="text-gray-500 hover:text-red-600 transition-colors"
+                        title="Delete Course"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
-                    <p className="text-sm mt-2 line-clamp-2">{course.description}</p>
-                    <div className="mt-4 space-y-2">
-                      <div className="flex items-center text-sm">
-                        <Code className="w-4 h-4 mr-2 text-primary" />
-                        <span className="font-medium mr-1">Code:</span>
-                        <span>{course.course_code}</span>
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h2 className="text-sm font-semibold">{course.title}</h2>
                       </div>
-                      <div className="flex items-center text-sm">
-                        <Trophy className="w-4 h-4 mr-2 text-primary" />
-                        <span className="font-medium mr-1">Course Units:</span>
-                        <span>{course.course_units}</span>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{course.description}</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm">
+                          <Code className="w-4 h-4 mr-2 text-primary" />
+                          <span className="font-medium mr-1">Code:</span>
+                          <span>{course.course_code}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Trophy className="w-4 h-4 mr-2 text-primary" />
+                          <span className="font-medium mr-1">Course Units:</span>
+                          <span>{course.course_units}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Key className="w-4 h-4 mr-2 text-primary" />
+                          <span className="font-medium mr-1">Join Code:</span>
+                          <span className="font-mono">{course.course_join_code}</span>
+                          <button
+                            className="ml-2 p-1 hover:bg-gray-100 rounded-md transition-colors"
+                            onClick={() => copyToClipboard(course.course_join_code)}
+                            title="Copy code"
+                          >
+                            {copiedCode === course.course_join_code ? (
+                              <Check className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-gray-500" />
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm">
-                        <Key className="w-4 h-4 mr-2 text-primary" />
-                        <span className="font-medium mr-1">Join Code:</span>
-                        <span className="font-mono">{course.course_join_code}</span>
-                        <button
-                          className="ml-2 p-1 hover:bg-gray-100 rounded-md transition-colors"
-                          onClick={() => copyToClipboard(course.course_join_code)}
-                          title="Copy code"
-                        >
-                          {copiedCode === course.course_join_code ? (
-                            <Check className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-gray-500" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <button className="btn btn-sm btn-outline mt-4 w-full">View Details</button>
                     </div>
                   </div>
                 ))}
@@ -228,12 +313,11 @@ export default function CoursesPage() {
             )}
           </>
         )}
-
-        {/* Course creation modal */}
+        {/* Create course modal */}
         <dialog id="create-course-modal" className="modal">
           <div className="modal-box">
             <form method="dialog" onSubmit={handleCreateCourse}>
-              <h3 className="font-bold text-lg mb-4">Create Course</h3>
+              <h3 className="font-bold text-lg mb-4">Create New Course</h3>
 
               <div className="form-control w-full mb-4">
                 <label className="label">
@@ -244,8 +328,8 @@ export default function CoursesPage() {
                   name="title"
                   placeholder="Enter course title"
                   className="input input-bordered w-full"
-                  value={formData.title}
-                  onChange={handleInputChange}
+                  value={createFormData.title}
+                  onChange={handleCreateInputChange}
                   required
                 />
               </div>
@@ -258,8 +342,8 @@ export default function CoursesPage() {
                   name="description"
                   placeholder="Enter course description"
                   className="textarea textarea-bordered w-full"
-                  value={formData.description}
-                  onChange={handleInputChange}
+                  value={createFormData.description}
+                  onChange={handleCreateInputChange}
                   required
                 />
               </div>
@@ -273,8 +357,8 @@ export default function CoursesPage() {
                   name="course_code"
                   placeholder="Enter course code"
                   className="input input-bordered w-full"
-                  value={formData.course_code}
-                  onChange={handleInputChange}
+                  value={createFormData.course_code}
+                  onChange={handleCreateInputChange}
                   required
                 />
               </div>
@@ -288,8 +372,97 @@ export default function CoursesPage() {
                   name="course_units"
                   placeholder="Enter course units"
                   className="input input-bordered w-full"
-                  value={formData.course_units}
-                  onChange={handleInputChange}
+                  value={createFormData.course_units}
+                  onChange={handleCreateInputChange}
+                  min="1"
+                  max="20"
+                  required
+                />
+              </div>
+
+              <div className="modal-action">
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => {
+                    const modal = document.getElementById("create-course-modal") as HTMLDialogElement;
+                    modal.close();
+                  }}
+                >
+                  Close
+                </button>
+                <Button
+                  type="submit"
+                  value="Create Course"
+                  loading={isSubmitting}
+                  width="w-30"
+                />
+              </div>
+            </form>
+          </div>
+        </dialog>
+
+        {/* Edit course modal */}
+        <dialog id="edit-course-modal" className="modal">
+          <div className="modal-box">
+            <form method="dialog" onSubmit={handleEditCourse}>
+              <h3 className="font-bold text-lg mb-4">Edit Course</h3>
+
+              <div className="form-control w-full mb-4">
+                <label className="label">
+                  <span className="label-text">Course Title</span>
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Enter course title"
+                  className="input input-bordered w-full"
+                  value={editFormData.title}
+                  onChange={handleEditInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-control w-full mb-4">
+                <label className="label">
+                  <span className="label-text">Description</span>
+                </label>
+                <textarea
+                  name="description"
+                  placeholder="Enter course description"
+                  className="textarea textarea-bordered w-full"
+                  value={editFormData.description}
+                  onChange={handleEditInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-control w-full mb-4">
+                <label className="label">
+                  <span className="label-text">Course Code</span>
+                </label>
+                <input
+                  type="text"
+                  name="course_code"
+                  placeholder="Enter course code"
+                  className="input input-bordered w-full"
+                  value={editFormData.course_code}
+                  onChange={handleEditInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-control w-full mb-4">
+                <label className="label">
+                  <span className="label-text">Course Units</span>
+                </label>
+                <input
+                  type="number"
+                  name="course_units"
+                  placeholder="Enter course units"
+                  className="input input-bordered w-full"
+                  value={editFormData.course_units}
+                  onChange={handleEditInputChange}
                   min="1"
                   max="20"
                   required
@@ -298,20 +471,49 @@ export default function CoursesPage() {
 
               <div className="modal-action">
                 <button type="button" className="btn btn-soft" onClick={() => {
-                  const modal = document.getElementById("create-course-modal") as HTMLDialogElement;
+                  const modal = document.getElementById("edit-course-modal") as HTMLDialogElement;
                   modal.close();
                 }}>
                   Close
                 </button>
                 <Button
                   type="submit"
-                  value={isSubmitting ? "Creating..." : "Create"}
-                  onClick={() => handleCreateCourse}
-                  disabled={isSubmitting}
-                  width="w-20"
+                  value="Save Changes"
+                  loading={isSubmitting}
+                  width="w-30"
                 />
               </div>
             </form>
+          </div>
+        </dialog>
+
+        {/* Delete confirmation modal */}
+        <dialog id="delete-confirmation-modal" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-4">Confirm Course Deletion</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this course? This action cannot be undone.
+            </p>
+            <div className="modal-action">
+              <button
+                type="button"
+                className="btn btn-soft"
+                onClick={() => {
+                  const modal = document.getElementById("delete-confirmation-modal") as HTMLDialogElement;
+                  modal.close();
+                  setCourseToDelete(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-error"
+                onClick={handleDeleteCourse}
+              >
+                Delete Course
+              </button>
+            </div>
           </div>
         </dialog>
       </main>

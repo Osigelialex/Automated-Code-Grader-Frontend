@@ -96,6 +96,7 @@ export default function AssignmentDetailPage() {
           );
           setFeedback(feedbackResponse.data.feedback);
         } catch (e: unknown) {
+          console.error(e);
           setFeedback('Oops...Checkmate AI is not available at the moment');
         }
       } else {
@@ -108,6 +109,7 @@ export default function AssignmentDetailPage() {
           );
           setFeedback(feedbackResponse.data.feedback)
         } catch (e: unknown) {
+          console.error(e);
           setFeedback('Oops...Checkmate AI is not available at the moment');
         }
       }
