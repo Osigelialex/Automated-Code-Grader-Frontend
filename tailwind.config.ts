@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      textColor: {
+        DEFAULT: "#4A4A4A"
+      },
       colors: {
         primary: "#3b82f6",
         secondary: "#f8f9fb"

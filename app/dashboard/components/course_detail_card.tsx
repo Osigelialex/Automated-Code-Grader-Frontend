@@ -35,13 +35,13 @@ export default function CourseDetailCard({ course }: { course: ICourse }) {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className='text-sm'>Lecturer: <span className="font-medium">{course?.lecturer.first_name} {course?.lecturer.last_name}</span></span>
+              <span className='text-sm'>Lecturer: <span className="font-medium">{course?.lecturer!.first_name} {course?.lecturer!.last_name}</span></span>
             </div>
             <div className="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span className='text-sm'>Contact: <span className="font-medium">{course?.lecturer.email}</span></span>
+              <span className='text-sm'>Contact: <span className="font-medium">{course?.lecturer!.email}</span></span>
             </div>
           </div>
         </div>

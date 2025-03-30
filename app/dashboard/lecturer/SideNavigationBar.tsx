@@ -94,7 +94,6 @@ const SideNavigationBar = () => {
 
   return (
     <>
-      {/* Mobile Overlay - only visible when sidebar is open on mobile */}
       {isMobile && open && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20"
@@ -103,18 +102,8 @@ const SideNavigationBar = () => {
       )}
 
       <aside
-        className={`
-          border-r border-base-200
-          transition-all duration-300 ease-in-out
-          fixed md:relative
-          z-30 md:z-auto
-          bg-white dark:bg-base-100
-          h-screen
-          ${open ? 'w-64' : 'w-0 md:w-20'} 
-          ${isMobile && !open ? '-translate-x-full' : 'translate-x-0'}
-        `}
+        className={`border-r border-base-200 transition-all duration-300 ease-in-out fixed md:relative z-30 md:z-auto bg-white dark:bg-base-100 h-screen ${open ? 'w-64' : 'w-0 md:w-20'} ${isMobile && !open ? '-translate-x-full' : 'translate-x-0'}`}
       >
-        {/* Toggle Button - Hidden on mobile, using a mobile menu button instead */}
         <button
           className={`
             hidden md:flex
@@ -144,7 +133,7 @@ const SideNavigationBar = () => {
         </div>)}
 
         {/* Navigation Links */}
-        <div className="px-4 py-6 overflow-y-auto">
+        <div className={`px-4 py-6 overflow-y-auto sm:block ${open ? 'block' : 'hidden'}`}>
           <nav className="space-y-2">
             {sideBarLinks.map((link, index) => {
               const Icon = link.icon

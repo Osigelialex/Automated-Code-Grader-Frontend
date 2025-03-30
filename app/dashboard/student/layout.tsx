@@ -26,11 +26,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar Navigation */}
       <SideNavigationBar />
 
       {/* Main Content */}
-      <div className="flex-grow overflow-y-auto min-h-0 md:min-h-screen dark:bg-base-200 bg-secondary">
+      <div className="flex-grow p-3 overflow-y-auto min-h-0 md:min-h-screen dark:bg-base-200 bg-secondary">
         {children}
       </div>
     </div>

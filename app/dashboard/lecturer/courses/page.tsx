@@ -175,12 +175,12 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen p-3">
       {/* Header */}
-      <header className="py-4">
+      <header className="py-1">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <div>
-              <h1 className="text-xl font-bold">Course Dashboard</h1>
-              <p className="text-xs sm:text-sm text-gray-600">Manage and create your academic courses</p>
+            <div className="space-y-2">
+              <h1 className="font-bold">Course Management</h1>
+              <p className="text-sm text-gray-600">Manage and create your academic courses</p>
             </div>
             <div className="self-start sm:self-auto">
               <Button
@@ -198,7 +198,7 @@ export default function CoursesPage() {
       </header>
 
       {/* Search bar */}
-      <div className="w-full md:w-1/2 px-4 md:px-8">
+      <div className="mt-3 w-full md:w-1/2 px-4 md:px-8">
         <label className="input input-bordered flex items-center gap-2">
           <input
             type="text"

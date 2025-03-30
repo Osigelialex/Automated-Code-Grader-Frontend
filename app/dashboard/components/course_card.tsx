@@ -20,13 +20,13 @@ export default function CourseCard({ course }:{ course: ICourse }) {
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               <span className="text-sm">
-                <span className="font-semibold">Lecturer:</span> {course.lecturer.first_name} {course.lecturer.last_name}
+                <span className="font-semibold">Lecturer:</span> {course.lecturer!.first_name} {course.lecturer!.last_name}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Book className="h-4 w-4 text-primary" />
               <span className="text-sm">
-                <span className="font-semibold">Department:</span> {course.lecturer.department}
+                <span className="font-semibold">Department:</span> {course.lecturer!.department}
               </span>
             </div>
           </div>

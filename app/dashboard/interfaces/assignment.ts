@@ -18,6 +18,7 @@ export interface IAssignment {
   description: string;
   max_score: 100;
   programming_language: string;
+  deadline: string;
   language_id: number;
   is_draft: boolean;
   created_at: string;
