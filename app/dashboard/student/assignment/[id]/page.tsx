@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/axiosConfig';
 import { AxiosError } from 'axios';
@@ -9,14 +9,14 @@ import Loading from '@/app/loading';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse, IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog, CloudUpload, Play, Trophy, Clock } from 'lucide-react';
+import { BrainCog, CloudUpload, Play, Trophy, Clock, Save } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export default function AssignmentDetailPage() {
   const [assignment, setAssignment] = useState<IAssignmentDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [code, setCode] = useState<string>('# Start coding here');
+  const [code, setCode] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
   const [feedbackLoading, setFeedbackLoading] = useState<boolean>(true);
   const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
@@ -24,29 +24,104 @@ export default function AssignmentDetailPage() {
   const [isTestSubmissionSubmitting, setIsTestSubmissionSubmitting] = useState<boolean>(false);
   const [activeTestCase, setActiveTestCase] = useState<number>(0);
   const [solved, setSolved] = useState<boolean>(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showSavedIndicator, setShowSavedIndicator] = useState<boolean>(false);
 
   const { theme } = useTheme();
   const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
   const { id } = useParams();
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Get storage key based on assignment ID
+  const getStorageKey = useCallback(() => {
+    return `assignment_code_${id}`;
+  }, [id]);
+
+  // Save code to localStorage
+  const saveCodeToLocalStorage = useCallback(() => {
+    if (!code || !id) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(getStorageKey(), code);
+      setLastSaved(new Date());
+      setShowSavedIndicator(true);
+
+      // Hide the indicator after 2 seconds
+      setTimeout(() => {
+        setShowSavedIndicator(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to save code to localStorage:', error);
+    }
+  }, [code, id, getStorageKey]);
+
+  // Read code from localStorage
+  const readCodeFromLocalStorage = useCallback((): string | null => {
+    try {
+      return localStorage.getItem(getStorageKey());
+    } catch (error) {
+      console.error('Failed to read code from localStorage:', error);
+      return null;
+    }
+  }, [getStorageKey]);
+
+  // Setup autosave timer
+  useEffect(() => {
+    // Clear any existing timer
+    if (autoSaveTimerRef.current) {
+      clearInterval(autoSaveTimerRef.current);
+    }
+
+    // Set new autosave timer
+    autoSaveTimerRef.current = setInterval(() => {
+      if (code) {
+        saveCodeToLocalStorage();
+      }
+    }, 7000);
+
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, [code, saveCodeToLocalStorage]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [assignmentResponse, progressResponse] = await Promise.all([
-          api.get(`/assignments/${id}`),
-          api.get(`/assignments/${id}/progress`)
-        ]);
+        // First try to load code from localStorage
+        const savedCode = readCodeFromLocalStorage();
 
+        // Fetch assignment data
+        const assignmentResponse = await api.get(`/assignments/${id}`);
         setAssignment(assignmentResponse.data);
 
-        if (progressResponse.data?.code) {
-          setCode(progressResponse.data.code);
+        if (savedCode) {
+          // Use code from localStorage if available
+          setCode(savedCode);
+
+          // Also fetch solved status
+          const progressResponse = await api.get(`/assignments/${id}/progress`);
+          if (progressResponse.data?.solved) {
+            setSolved(progressResponse.data.solved);
+          }
+        } else {
+          // If no localStorage code, fetch from API
+          const progressResponse = await api.get(`/assignments/${id}/progress`);
+
+          if (progressResponse.data?.code) {
+            setCode(progressResponse.data.code);
+          }
+
+          if (progressResponse.data?.solved) {
+            setSolved(progressResponse.data.solved);
+          }
         }
 
-        if (progressResponse.data?.solved) {
-          setSolved(progressResponse.data.solved);
-        }
         setLoading(false);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
@@ -59,10 +134,64 @@ export default function AssignmentDetailPage() {
     if (id) {
       fetchData();
     }
-  }, [id]);
+  }, [id, readCodeFromLocalStorage]);
+
+  function mapJudge0LanguageToMonaco(judge0Language: string): string {
+    const languageMap: { [key: string]: string } = {
+      "Assembly": "asm",
+      "Bash": "shell",
+      "Basic": "vb",
+      "C": "c",
+      "C++": "cpp",
+      "C#": "csharp",
+      "COBOL": "cobol",
+      "Common Lisp": "lisp",
+      "Dart": "dart",
+      "D": "d",
+      "Elixir": "elixir",
+      "Erlang": "erlang",
+      "F#": "fsharp",
+      "Fortran": "fortran",
+      "Go": "go",
+      "Groovy": "groovy",
+      "Haskell": "haskell",
+      "JavaFX": "java",
+      "Java": "java",
+      "JavaScript": "javascript",
+      "Kotlin": "kotlin",
+      "Lua": "lua",
+      "Objective-C": "objective-c",
+      "OCaml": "ocaml",
+      "Octave": "matlab",
+      "Pascal": "pascal",
+      "Perl": "perl",
+      "PHP": "php",
+      "Prolog": "prolog",
+      "Python": "python",
+      "R": "r",
+      "Ruby": "ruby",
+      "Rust": "rust",
+      "Scala": "scala",
+      "SQL": "sql",
+      "Swift": "swift",
+      "TypeScript": "typescript",
+      "Visual Basic.Net": "vb"
+    };
+
+    if (!judge0Language) {
+      return "plaintext";
+    }
+
+    const baseLanguage = judge0Language.split(" ")[0].trim();
+    if (baseLanguage in languageMap) {
+      return languageMap[baseLanguage];
+    }
+
+    return 'plaintext';
+  }
 
   const handleEditorChange = (value: string | undefined) => {
-    if (value) {
+    if (value !== undefined) {
       setCode(value);
     }
   };
@@ -72,6 +201,9 @@ export default function AssignmentDetailPage() {
       toast.error('Please write some code before submitting');
       return;
     }
+
+    // Save before submitting
+    saveCodeToLocalStorage();
 
     setFeedback('');
     if (is_test === true) {
@@ -89,6 +221,7 @@ export default function AssignmentDetailPage() {
       // Fetch personalized feedback from LLM
       if (is_test === false) {
         try {
+          console.log("SUBMISSION DATA", response.data);
           const feedbackResponse = await api.post<{ feedback: string }>(
             `/submissions/${response.data.submission_id}/feedback`,
             {},
@@ -143,6 +276,15 @@ export default function AssignmentDetailPage() {
     });
   };
 
+  const formatSavedTime = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header Section */}
@@ -191,12 +333,18 @@ export default function AssignmentDetailPage() {
             {/* Editor Section */}
             <div className="card bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Solution Editor</h2>
+                <div className="flex justify-between items-center">
+                  <h2 className="card-title">Solution Editor</h2>
+                  <div className={`flex items-center gap-1 text-xs transition-opacity duration-300 ${showSavedIndicator ? 'opacity-100' : 'opacity-0'}`}>
+                    <Save size={14} className="text-success" />
+                    <span className="text-success">Saved at {formatSavedTime(lastSaved)}</span>
+                  </div>
+                </div>
                 <div className="h-[600px] w-full">
                   <Editor
                     width="100%"
                     height="100%"
-                    defaultLanguage='python'
+                    defaultLanguage={mapJudge0LanguageToMonaco(assignment?.programming_language || 'plaintext')}
                     defaultValue={code}
                     onChange={handleEditorChange}
                     theme={theme === 'light' ? 'light' : 'vs-dark'}
