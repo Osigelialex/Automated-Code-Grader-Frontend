@@ -65,7 +65,7 @@ export default function CoursesPage() {
   const filteredCourses = courses.results.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.course_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.lecturer.department.toLowerCase().includes(searchTerm.toLowerCase())
+    course.lecturer!.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const fetchPage = async (link: string) => {
@@ -182,8 +182,8 @@ export default function CoursesPage() {
                     <td>{course.course_code}</td>
                     <td>{course.title}</td>
                     <td>{course.course_units}</td>
-                    <td>{`${course.lecturer.first_name} ${course.lecturer.last_name}`}</td>
-                    <td>{course.lecturer.department}</td>
+                    <td>{`${course.lecturer!.first_name} ${course.lecturer!.last_name}`}</td>
+                    <td>{course.lecturer!.department}</td>
                   </tr>
                 ))}
               </tbody>
