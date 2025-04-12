@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   BookOpen,
   FileCheck,
-  Settings,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -83,11 +82,6 @@ const SideNavigationBar = () => {
     {
       name: 'Submissions',
       icon: FileCheck,
-      path: '#'
-    },
-    {
-      name: 'Settings',
-      icon: Settings,
       path: '#'
     }
   ]

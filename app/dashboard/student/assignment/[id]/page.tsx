@@ -9,7 +9,7 @@ import Loading from '@/app/loading';
 import Image from 'next/image';
 import Editor from '@monaco-editor/react';
 import { ISubmissionResponse, IAssignmentDetails } from '@/app/dashboard/interfaces/assignment';
-import { BrainCog, CloudUpload, Play, Trophy, Clock, Save } from 'lucide-react';
+import { BrainCog, CloudUpload, Play, Trophy, Clock, Save, AlertCircle, LockIcon, Star, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export default function AssignmentDetailPage() {
@@ -18,6 +18,7 @@ export default function AssignmentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
+  const [feedbackId, setFeedbackId] = useState<string>('');
   const [feedbackLoading, setFeedbackLoading] = useState<boolean>(true);
   const [submissionResponse, setSubmissionResponse] = useState<ISubmissionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -26,6 +27,9 @@ export default function AssignmentDetailPage() {
   const [solved, setSolved] = useState<boolean>(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showSavedIndicator, setShowSavedIndicator] = useState<boolean>(false);
+  const [showRatingModal, setShowRatingModal] = useState<boolean>(false);
+  const [rating, setRating] = useState<number>(0);
+  const [hasRated, setHasRated] = useState<boolean>(false);
 
   const { theme } = useTheme();
   const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
@@ -35,6 +39,11 @@ export default function AssignmentDetailPage() {
   // Get storage key based on assignment ID
   const getStorageKey = useCallback(() => {
     return `assignment_code_${id}`;
+  }, [id]);
+
+  // Get rating status storage key
+  const getRatingStorageKey = useCallback(() => {
+    return `feedback_rated_${id}`;
   }, [id]);
 
   // Save code to localStorage
@@ -67,6 +76,27 @@ export default function AssignmentDetailPage() {
     }
   }, [getStorageKey]);
 
+  // Check if user has already rated this feedback
+  const checkIfRated = useCallback((): boolean => {
+    try {
+      const rated = localStorage.getItem(getRatingStorageKey());
+      return rated === 'true';
+    } catch (error) {
+      console.error('Failed to check rating status:', error);
+      return false;
+    }
+  }, [getRatingStorageKey]);
+
+  // Mark feedback as rated
+  const markFeedbackAsRated = useCallback(() => {
+    try {
+      localStorage.setItem(getRatingStorageKey(), 'true');
+      setHasRated(true);
+    } catch (error) {
+      console.error('Failed to save rating status:', error);
+    }
+  }, [getRatingStorageKey]);
+
   // Setup autosave timer
   useEffect(() => {
     // Clear any existing timer
@@ -95,6 +125,9 @@ export default function AssignmentDetailPage() {
       try {
         // First try to load code from localStorage
         const savedCode = readCodeFromLocalStorage();
+        // Check if feedback has been rated before
+        const rated = checkIfRated();
+        setHasRated(rated);
 
         // Fetch assignment data
         const assignmentResponse = await api.get(`/assignments/${id}`);
@@ -134,7 +167,7 @@ export default function AssignmentDetailPage() {
     if (id) {
       fetchData();
     }
-  }, [id, readCodeFromLocalStorage]);
+  }, [id, readCodeFromLocalStorage, checkIfRated]);
 
   function mapJudge0LanguageToMonaco(judge0Language: string): string {
     const languageMap: { [key: string]: string } = {
@@ -197,8 +230,14 @@ export default function AssignmentDetailPage() {
   };
 
   const handleSubmitSolution = async (is_test: boolean) => {
-    if (code === '# Start coding here') {
+    if (code === '') {
       toast.error('Please write some code before submitting');
+      return;
+    }
+
+    // Block submission if student already attempted
+    if (!is_test && assignment?.student_attempted) {
+      toast.error('You have already submitted this assignment');
       return;
     }
 
@@ -218,16 +257,29 @@ export default function AssignmentDetailPage() {
       setIsTestSubmissionSubmitting(false);
       setFeedbackLoading(true);
 
+      // Update student_attempted state if this was a real submission
+      if (!is_test) {
+        setAssignment(prev => prev ? { ...prev, student_attempted: true } : null);
+      }
+
       // Fetch personalized feedback from LLM
       if (is_test === false) {
         try {
           console.log("SUBMISSION DATA", response.data);
-          const feedbackResponse = await api.post<{ feedback: string }>(
+          const feedbackResponse = await api.post<{ id: string, feedback: string }>(
             `/submissions/${response.data.submission_id}/feedback`,
             {},
             { withCredentials: true }
           );
           setFeedback(feedbackResponse.data.feedback);
+          setFeedbackId(feedbackResponse.data.id);
+
+          // Show rating modal if user hasn't rated before
+          if (!hasRated && Math.random() < 0.7) { // Show modal 70% of the time
+            setTimeout(() => {
+              setShowRatingModal(true);
+            }, 5000); // Show rating after 5 seconds of viewing feedback
+          }
         } catch (e: unknown) {
           console.error(e);
           setFeedback('Oops...Checkmate AI is not available at the moment');
@@ -240,7 +292,7 @@ export default function AssignmentDetailPage() {
           },
             { withCredentials: true }
           );
-          setFeedback(feedbackResponse.data.feedback)
+          setFeedback(feedbackResponse.data.feedback);
         } catch (e: unknown) {
           console.error(e);
           setFeedback('Oops...Checkmate AI is not available at the moment');
@@ -255,6 +307,28 @@ export default function AssignmentDetailPage() {
       setFeedbackLoading(false);
     }
   }
+
+  const handleRating = async (selectedRating: number) => {
+    setRating(selectedRating);
+
+    if (!feedbackId) {
+      toast.error('Cannot rate feedback at this time');
+      return;
+    }
+
+    try {
+      await api.post(`/feedback/${feedbackId}/rate`, {
+        rating: selectedRating
+      });
+
+      toast.success('Thank you for rating our feedback!');
+      markFeedbackAsRated();
+      setShowRatingModal(false);
+    } catch (error) {
+      toast.error('Failed to submit rating');
+      console.error('Rating error:', error);
+    }
+  };
 
   if (loading) return <Loading />;
   if (error) {
@@ -298,6 +372,12 @@ export default function AssignmentDetailPage() {
                   Solved
                 </p>
               )}
+              {assignment!.student_attempted && !solved && (
+                <div className="badge badge-warning gap-1">
+                  <AlertCircle size={14} />
+                  Submitted
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -316,6 +396,21 @@ export default function AssignmentDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Submission Status Alert */}
+      {assignment!.student_attempted && (
+        <div className="max-w-7xl mx-auto mt-4 px-4">
+          <div className="alert alert-info shadow-lg">
+            <div className="flex items-center gap-3">
+              <LockIcon className="h-6 w-6" />
+              <div>
+                <h3 className="font-bold">Submission Locked</h3>
+                <div className="text-sm">You have already submitted this assignment. You can still view your code and run tests, but cannot submit again.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-3 px-4">
@@ -356,6 +451,7 @@ export default function AssignmentDetailPage() {
                       automaticLayout: true,
                       lineNumbers: 'on',
                       roundedSelection: false,
+                      readOnly: assignment!.student_attempted ? true : false,
                       scrollbar: {
                         vertical: 'visible',
                         horizontal: 'visible',
@@ -382,12 +478,17 @@ export default function AssignmentDetailPage() {
                     )}
                   </button>
                   <button
-                    className="bg-base-200 px-7 py-2 text-success flex items-center gap-2"
+                    className={`px-7 py-2 flex items-center gap-2 ${assignment!.student_attempted ? 'bg-base-300 text-base-content/50' : 'bg-base-200 text-success'}`}
                     onClick={() => handleSubmitSolution(false)}
-                    disabled={isSubmitting || isTestSubmissionSubmitting}
+                    disabled={isSubmitting || isTestSubmissionSubmitting || assignment!.student_attempted === true}
                   >
                     {isSubmitting ? (
                       <span className="loading loading-spinner"></span>
+                    ) : assignment!.student_attempted ? (
+                      <>
+                        <LockIcon size={18} />
+                        Submitted
+                      </>
                     ) : (
                       <>
                         <CloudUpload size={18} />
@@ -559,6 +660,58 @@ export default function AssignmentDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Feedback Rating Modal */}
+      {showRatingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-base-100 rounded-lg shadow-xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowRatingModal(false)}
+              className="absolute top-3 right-3 text-base-content/70 hover:text-base-content"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-bold mb-2">How helpful was our AI feedback?</h3>
+              <p className="text-base-content/70 text-sm">
+                Your rating helps us improve the quality of our AI assistant.
+              </p>
+            </div>
+
+            <div className="flex justify-center items-center gap-2 mb-8">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => handleRating(star)}
+                  className="transition-all duration-200 hover:scale-110 focus:outline-none"
+                >
+                  <Star
+                    size={36}
+                    className={star <= rating ? "fill-yellow-400 text-yellow-400" : "text-base-content/30"}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowRatingModal(false)}
+                className="btn btn-outline"
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => handleRating(rating)}
+                className="btn btn-primary"
+                disabled={rating === 0}
+              >
+                Submit Rating
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

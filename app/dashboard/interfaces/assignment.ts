@@ -36,6 +36,7 @@ export interface IAssignmentDetails {
   id: string;
   title: string;
   description: string;
+  student_attempted: boolean | null;
   deadline: string;
   created_at: string;
   updated_at: string;

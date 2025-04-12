@@ -3,7 +3,6 @@ import React, { useEffect } from 'react'
 import {
   LayoutDashboard,
   BookOpen,
-  Settings,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -84,11 +83,6 @@ const SideNavigationBar = () => {
       name: 'Assignments',
       icon: Notebook,
       path: '/dashboard/lecturer/assignments'
-    },
-    {
-      name: 'Settings',
-      icon: Settings,
-      path: '#'
     }
   ]
 
