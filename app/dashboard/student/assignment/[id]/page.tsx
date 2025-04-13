@@ -282,7 +282,7 @@ export default function AssignmentDetailPage() {
           }
         } catch (e: unknown) {
           console.error(e);
-          setFeedback('Oops...Checkmate AI is not available at the moment');
+          setFeedback('Oops...Checkmater AI is not available at the moment');
         }
       } else {
         try {
@@ -295,7 +295,7 @@ export default function AssignmentDetailPage() {
           setFeedback(feedbackResponse.data.feedback);
         } catch (e: unknown) {
           console.error(e);
-          setFeedback('Oops...Checkmate AI is not available at the moment');
+          setFeedback('Oops...Checkmater AI is not available at the moment');
         }
       }
     } catch (e: unknown) {
