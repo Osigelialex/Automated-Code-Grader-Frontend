@@ -72,7 +72,7 @@ export default function LecturerSignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 mx-auto'>
       <div className='grid lg:grid-cols-2 gap-4'>
         <div>
           <label htmlFor="firstName" className='block text-sm'>FirstName</label>

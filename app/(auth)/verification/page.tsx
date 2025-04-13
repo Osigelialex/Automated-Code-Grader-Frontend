@@ -43,7 +43,7 @@ export default function AccountVerificationPage() {
 
   return (
     <div className="sm:w-3/4 mx-auto p-6 space-y-8">
-      <div className="space-y-4">
+      <div className="space-y-4 sm:w-3/4 mx-auto">
         <h1 className="sm:text-2xl text-lg font-bold">Account Activation</h1>
         <p>Please check your inbox for a verification link to complete your signup.</p>
       </div>
