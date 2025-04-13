@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-6 h-6 bg-primary rounded-lg grid place-items-center">
             <span className="text-white text-xs font-bold">C</span>
           </div>
-          <span className="ml-2 font-semibold">CheckMate</span>
+          <span className="ml-2 font-semibold">CheckMater</span>
         </div>
       </div>
 

@@ -150,7 +150,7 @@ export default function Dashboard() {
         <div className="space-y-1 sm:space-y-2">
           <h1 className="font-bold text-xl">Welcome to Your Teacher Dashboard</h1>
           <p className="text-xs sm:text-sm text-gray-600">
-            Effortlessly manage and grade your students&apos; coding assignments with CheckMate!
+            Effortlessly manage and grade your students&apos; coding assignments with CheckMater!
           </p>
         </div>
       </div>

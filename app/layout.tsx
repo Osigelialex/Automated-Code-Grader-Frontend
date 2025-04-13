@@ -7,7 +7,7 @@ import { Toaster } from 'sonner';
 const poppins = Poppins({ subsets: ['latin'], weight: "400"})
 
 export const metadata: Metadata = {
-  title: "CheckMate",
+  title: "CheckMater",
   description: "An automated grading system for programming assignments",
 };
 

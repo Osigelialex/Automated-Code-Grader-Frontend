@@ -133,7 +133,7 @@ const SideNavigationBar = () => {
             <div className="w-8 h-8 bg-primary rounded-lg grid place-items-center">
               <GraduationCap size={20} className="text-white" />
             </div>
-            {open && <span className="px-4 text-lg font-semibold">CheckMate</span>}
+            {open && <span className="px-4 text-lg font-semibold">CheckMater</span>}
           </div>
         </div>}
 

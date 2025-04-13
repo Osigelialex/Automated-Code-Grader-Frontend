@@ -71,7 +71,7 @@ export default function TokenVeriifcation() {
 
       <div className="text-center space-y-4">
         <p className="text-sm text-gray-500">Need help? Contact our <a href="#" className="text-blue-500 underline">support team</a>.</p>
-        <p className="text-sm text-gray-500">© 2024 Checkmate. All rights reserved.</p>
+        <p className="text-sm text-gray-500">© 2024 Checkmater. All rights reserved.</p>
       </div>
     </>
   )

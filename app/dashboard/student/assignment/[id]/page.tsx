@@ -518,9 +518,9 @@ export default function AssignmentDetailPage() {
                     ) : (
                       <div className="text-center py-8 text-base-content/60">
                         {feedbackLoading ? (
-                          <p>CheckMate AI is brewing a feedback masterpiece...</p>
+                          <p>CheckMater AI is brewing a feedback masterpiece...</p>
                         ) : (
-                          <p>Feedback from CheckMate AI will be displayed here. Stay tuned!</p>
+                          <p>Feedback from CheckMater AI will be displayed here. Stay tuned!</p>
                         )}
                       </div>
                     )}
