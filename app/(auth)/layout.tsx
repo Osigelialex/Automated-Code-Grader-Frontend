@@ -10,10 +10,8 @@ export default function AuthLayout({
         <div className="lg:col-span-7 px-8 py-12 lg:py-20">
           {children}
         </div>
-        
-        <div className="hidden sm:block">
-          <SideBanner />
-        </div>
+
+        <SideBanner />
       </div>
     </main>
     )
