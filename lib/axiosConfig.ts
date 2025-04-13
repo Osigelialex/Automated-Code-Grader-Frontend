@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const api = axios.create({
   // baseURL: "http://localhost:8000/api/v1",
-  baseURL: "https://checkmate-api.vercel.app/api/v1",
+  baseURL: "https://checkmate-api-xfgf.onrender.com/api/v1",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
