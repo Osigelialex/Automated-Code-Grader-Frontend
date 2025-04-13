@@ -11,7 +11,9 @@ export default function AuthLayout({
           {children}
         </div>
         
-        <SideBanner />
+        <div className="hidden sm:block">
+          <SideBanner />
+        </div>
       </div>
     </main>
     )

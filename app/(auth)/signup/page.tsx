@@ -10,7 +10,7 @@ export default function SignupPage() {
   return (
     <div className='space-y-8 mx-auto sm:w-3/4'>
       <div>
-        <h1 className='lg:text-2xl text-xl font-bold mb-2'>Welcome to CheckMater</h1>
+        <h1 className='sm:text-2xl text-lg font-bold mb-2'>Welcome to CheckMater</h1>
         <p className='sm:text-md text-sm'>Create your CheckMater account. Already signed up <Link className='text-primary' href="/login">Login</Link></p>
       </div>
 
