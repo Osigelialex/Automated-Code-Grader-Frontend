@@ -275,11 +275,14 @@ export default function AssignmentDetailPage() {
           setFeedbackId(feedbackResponse.data.id);
 
           // Show rating modal if user hasn't rated before
-          if (!hasRated && Math.random() < 0.7) { // Show modal 70% of the time
-            setTimeout(() => {
-              setShowRatingModal(true);
-            }, 5000); // Show rating after 5 seconds of viewing feedback
-          }
+          // if (!hasRated && Math.random() < 0.7) { // Show modal 70% of the time
+          //   setTimeout(() => {
+          //     setShowRatingModal(true);
+          //   }, 5000); // Show rating after 5 seconds of viewing feedback
+          // }
+          setTimeout(() => {
+            setShowRatingModal(true);
+          }, 5000);
         } catch (e: unknown) {
           console.error(e);
           setFeedback('Oops...Checkmater AI is not available at the moment');

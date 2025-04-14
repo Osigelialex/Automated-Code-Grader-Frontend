@@ -39,9 +39,9 @@ export default function LoginForm() {
       const response = await api.post<LoginResponse>('/auth/login', data);
       const role = response.data.role;
       if (role === 'LECTURER') {
-        router.replace('/dashboard/lecturer');
+        router.push('/dashboard/lecturer');
       } else {
-        router.replace('/dashboard/student');
+        router.push('/dashboard/student');
       }
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
@@ -78,7 +78,7 @@ export default function LoginForm() {
           />
           <p className="text-sm text-red-400">{errors.email?.message}</p>
         </div>
-        <div className="relative">
+        <div className="relative mb-5">
           <label htmlFor="password" className="block text-sm">Password</label>
           <Link href="/forgot-password" className="absolute right-0 top-0 text-sm text-primary">
             Forgotten password?
