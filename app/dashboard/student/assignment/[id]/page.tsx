@@ -29,7 +29,6 @@ export default function AssignmentDetailPage() {
   const [showSavedIndicator, setShowSavedIndicator] = useState<boolean>(false);
   const [showRatingModal, setShowRatingModal] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(0);
-  const [hasRated, setHasRated] = useState<boolean>(false);
 
   const { theme } = useTheme();
   const [viewMode, setViewMode] = useState<'visible' | 'all'>('visible');
@@ -91,7 +90,6 @@ export default function AssignmentDetailPage() {
   const markFeedbackAsRated = useCallback(() => {
     try {
       localStorage.setItem(getRatingStorageKey(), 'true');
-      setHasRated(true);
     } catch (error) {
       console.error('Failed to save rating status:', error);
     }
@@ -125,10 +123,6 @@ export default function AssignmentDetailPage() {
       try {
         // First try to load code from localStorage
         const savedCode = readCodeFromLocalStorage();
-        // Check if feedback has been rated before
-        const rated = checkIfRated();
-        setHasRated(rated);
-
         // Fetch assignment data
         const assignmentResponse = await api.get(`/assignments/${id}`);
         setAssignment(assignmentResponse.data);
@@ -273,13 +267,6 @@ export default function AssignmentDetailPage() {
           );
           setFeedback(feedbackResponse.data.feedback);
           setFeedbackId(feedbackResponse.data.id);
-
-          // Show rating modal if user hasn't rated before
-          // if (!hasRated && Math.random() < 0.7) { // Show modal 70% of the time
-          //   setTimeout(() => {
-          //     setShowRatingModal(true);
-          //   }, 5000); // Show rating after 5 seconds of viewing feedback
-          // }
           setTimeout(() => {
             setShowRatingModal(true);
           }, 5000);
