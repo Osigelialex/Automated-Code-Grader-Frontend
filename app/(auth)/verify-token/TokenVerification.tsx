@@ -5,12 +5,15 @@ import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/axiosConfig'
 import { AxiosError } from 'axios'
 import { ErrorResponse } from '@/app/interfaces/errorInterface'
+import { setCookie } from 'cookies-next'
+import { useRouter } from 'next/navigation'
 
 export default function TokenVeriifcation() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('Verifying your email...')
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const router = useRouter();
 
   useEffect(() => {
     const verifyActivationToken = async () => {
@@ -21,9 +24,17 @@ export default function TokenVeriifcation() {
       }
 
       try {
-        await api.patch(`/auth/activate?token=${token}`)
+        const response = await api.patch(`/auth/activate?token=${token}`);
+        const access_token = response.data.tokens.access_token;
+        const refresh_token = response.data.tokens.refresh_token;
+
+        setCookie('cm_access_token', access_token);
+        setCookie('cm_refresh_token', refresh_token);
         setStatus('success')
-        setMessage('Email verified successfully! You can now close this window.')
+        setMessage('Email verified successfully! Redirecting you to login');
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
       } catch (e: unknown) {
         const error = e as AxiosError<ErrorResponse>;
         setStatus('error')
@@ -32,7 +43,7 @@ export default function TokenVeriifcation() {
     }
 
     verifyActivationToken()
-  }, [token])
+  }, [token, router])
 
   return (
     <>

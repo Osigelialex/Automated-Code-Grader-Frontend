@@ -10,11 +10,11 @@ import {
   Notebook
 } from 'lucide-react'
 import sidebarStore from '@/app/stores/useSidebarStore'
-import { api } from '@/lib/axiosConfig'
 import { AxiosError } from 'axios'
 import { ErrorResponse } from '@/app/interfaces/errorInterface'
 import { toast } from 'sonner'
 import { useRouter, usePathname } from 'next/navigation'
+import { deleteCookie } from 'cookies-next'
 
 interface ILink {
   name: string;
@@ -49,11 +49,15 @@ const SideNavigationBar = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await api.post('/auth/logout');
+
+      deleteCookie('cm_refresh_token');
+      deleteCookie('cm_access_token');
+      
       router.push('/login');
     } catch (e: unknown) {
       const error = e as AxiosError<ErrorResponse>;
-      toast.error(error.response?.data.message);
+      console.error("Logout error details:", error.response?.data);
+      toast.error(error.response?.data.message || 'Logout Failed');
     } finally {
       setIsLoggingOut(false);
       (document.getElementById('log_out_modal') as HTMLDialogElement).close();

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { ErrorResponse } from '@/app/interfaces/errorInterface';
+import { setCookie } from 'cookies-next';
 
 interface LoginFormProps {
   email: string;
@@ -19,7 +20,11 @@ interface LoginFormProps {
 
 interface LoginResponse {
   message: string;
-  role: string
+  role: string;
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+  }
 }
 
 export default function LoginForm() {
@@ -38,6 +43,13 @@ export default function LoginForm() {
     try {
       const response = await api.post<LoginResponse>('/auth/login', data);
       const role = response.data.role;
+
+      const access_token = response.data.tokens.access_token;
+      const refresh_token = response.data.tokens.refresh_token;
+
+      setCookie('cm_access_token', access_token);
+      setCookie('cm_refresh_token', refresh_token);
+
       if (role === 'LECTURER') {
         router.push('/dashboard/lecturer');
       } else {
